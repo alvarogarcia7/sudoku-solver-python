@@ -64,7 +64,6 @@ class TestIOTest(unittest.TestCase):
         self.assertEqual(raw_values, actual)
 
     def test_check_is_complete(self):
-        io = IO()
         raw_values = [
             "123456789",
             "123456789",
@@ -76,12 +75,11 @@ class TestIOTest(unittest.TestCase):
             "123456789",
             "123456789"
         ]
-        sudoku = io.load(raw_values)
+        sudoku = IO().load(raw_values)
 
         self.assertTrue(sudoku.is_complete())
 
     def test_check_is_incomplete(self):
-        io = IO()
         raw_values = [
             " 23456789",
             "123456789",
@@ -93,12 +91,11 @@ class TestIOTest(unittest.TestCase):
             "123456789",
             "123456789"
         ]
-        sudoku = io.load(raw_values)
+        sudoku = IO().load(raw_values)
 
         self.assertFalse(sudoku.is_complete())
 
     def test_check_is_correct(self):
-        io = IO()
         # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/solved1.sud
         raw_values = [
             "123456789",
@@ -111,7 +108,7 @@ class TestIOTest(unittest.TestCase):
             "642978531",
             "978531642"
         ]
-        sudoku = io.load(raw_values)
+        sudoku = IO().load(raw_values)
 
         self.assertTrue(sudoku.is_correct())
 
