@@ -10,6 +10,10 @@ class Sudoku:
 
         self.value = value
 
+    def is_complete(self):
+        result = all([len(list(filter(lambda cell: cell is not None, row))) == 9 for row in self.value])
+        return result
+
 
 class IO:
     def load(self, raw_values):
@@ -38,6 +42,23 @@ class TestIOTest(unittest.TestCase):
         sudoku = io.load(raw_values)
         actual = io.serialize(sudoku)
         self.assertEqual(raw_values, actual)
+
+    def test_check_is_complete(self):
+        io = IO()
+        raw_values = [
+            "123456789",
+            "123456789",
+            "123456789",
+            "123456789",
+            "123456789",
+            "123456789",
+            "123456789",
+            "123456789",
+            "123456789"
+        ]
+        sudoku = io.load(raw_values)
+
+        self.assertTrue(sudoku.is_complete())
 
 
 if __name__ == '__main__':
