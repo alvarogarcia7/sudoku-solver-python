@@ -11,8 +11,7 @@ class Sudoku:
         self.value = value
 
     def is_complete(self):
-        result = all([len(list(filter(lambda cell: cell is not None, row))) == 9 for row in self.value])
-        return result
+        return all([len(list(filter(lambda cell: cell is not None, row))) == 9 for row in self.value])
 
 
 class IO:
