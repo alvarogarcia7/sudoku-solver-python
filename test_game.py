@@ -112,6 +112,23 @@ class TestIOTest(unittest.TestCase):
 
         self.assertTrue(sudoku.is_correct())
 
+    def test_check_is_correct(self):
+        # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/solved1.sud
+        raw_values = [
+            "123456789",
+            "156789123",
+            "789123456",
+            "214365897",
+            "365897214",
+            "897214365",
+            "531642978",
+            "642978531",
+            "978531642"
+        ]
+        sudoku = IO().load(raw_values)
+
+        self.assertFalse(sudoku.is_correct())
+
 
 if __name__ == '__main__':
     unittest.main()
