@@ -77,6 +77,23 @@ class TestIOTest(unittest.TestCase):
 
         self.assertTrue(sudoku.is_complete())
 
+    def test_check_is_incomplete(self):
+        io = IO()
+        raw_values = [
+            " 23456789",
+            "123456789",
+            "123456789",
+            "123456789",
+            "123456789",
+            "123456789",
+            "123456789",
+            "123456789",
+            "123456789"
+        ]
+        sudoku = io.load(raw_values)
+
+        self.assertFalse(sudoku.is_complete())
+
 
 if __name__ == '__main__':
     unittest.main()
