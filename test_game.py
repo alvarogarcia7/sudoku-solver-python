@@ -37,6 +37,7 @@ class Sudoku:
         self._compute_candidate()
         # self.print_candidates()
         while self._occupied_cells() != SIZE * SIZE:
+            filled_this_iteration = 0
             for value_candidate in range(0, SIZE):
                 for row in range(0, SIZE):
                     for column in range(0, SIZE):
@@ -50,10 +51,16 @@ class Sudoku:
                         if len(by_row) == 1 and len(by_column) == 1 and len(by_square) == 1:
                             self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
                             self._compute_candidate()
+                            filled_this_iteration+=1
 
                         if len(by_square) == 1:
                             self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
                             self._compute_candidate()
+                            filled_this_iteration+=1
+            if filled_this_iteration == 0:
+                print("Nothing found")
+                self.print_candidates()
+                break
 
 
     def print_candidates(self):
@@ -108,7 +115,7 @@ class Sudoku:
 
 class IO:
     def load(self, raw_values):
-        x: list[list[int]] = [list(map(lambda x: int(x) if x != ' ' else None, raw_value)) for raw_value in raw_values]
+        x: list[list[int]] = [list(map(lambda x: int(x) if x != ' ' and x!='.' else None, raw_value)) for raw_value in raw_values]
         return Sudoku(x)
 
     def serialize(self, sudoku: Sudoku):
@@ -277,6 +284,47 @@ class TestIOTest(unittest.TestCase):
 
         self.assertTrue(sudoku.is_correct())
         self.assertTrue(sudoku.is_complete())
+
+    def test_complete_sudoku_with_ambiguity(self):
+        # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/easy49.sud
+        raw_values = [
+            ".....3.17",
+            ".15..9..8",
+            ".6.......",
+            "1....7...",
+            "..9...2..",
+            "...5....4",
+            ".......2.",
+            "5..6..34.",
+            "34.2....."
+        ]
+        sudoku = IO().load(raw_values)
+
+        sudoku.solve()
+
+        self.assertTrue(sudoku.is_correct())
+        self.assertTrue(sudoku.is_complete())
+
+    def test_fail_to_complete_impossible_sudoku(self):
+        # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/impossible.sud
+        raw_values = [
+            "36..712..",
+            ".5....18.",
+            "..92.47..",
+            "....13.28",
+            "4..1.2..9",
+            "27.46....",
+            "..53.89..",
+            ".83....6.",
+            "..769..43"
+        ]
+        sudoku = IO().load(raw_values)
+
+        sudoku.solve()
+
+        self.assertFalse(sudoku.is_correct())
+        self.assertFalse(sudoku.is_complete())
+
 
 
 if __name__ == '__main__':
