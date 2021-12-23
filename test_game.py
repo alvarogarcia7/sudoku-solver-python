@@ -1,6 +1,10 @@
+import collections
 import unittest
-from itertools import chain
-from typing import List
+from typing import List, Optional, Any
+
+SIZE: int = 9
+
+consume = collections.deque(maxlen=0).extend
 
 
 class Sudoku:
@@ -9,12 +13,84 @@ class Sudoku:
         assert len(value[0]) == 9
 
         self.value = value
+        # value (0_based) -> row -> column
+        self._is_empty: list[list[list[bool]]] = self._empty_candidates()
 
     def is_complete(self):
         return all([len(list(filter(lambda cell: cell is not None, row))) == 9 for row in self.value])
 
     def is_correct(self):
-        return all([sorted(row) == list(range(1, 10)) for row in self.value])
+        try:
+            return all([sorted(row) == list(range(1, 10)) for row in self.value])
+        except TypeError:
+            return False
+
+    def solve(self):
+        self._compute_candidate()
+        # self.print_candidates()
+        for value_candidate in range(0, SIZE):
+            for row in range(0, SIZE):
+                for column in range(0, SIZE):
+                    value_ = self.value[row][column]
+                    if value_ is not None:
+                        continue
+                    by_row = set(filter(lambda i: [i, column] if self._is_empty[value_candidate][i][column] else None, range(0, SIZE)))
+                    by_column = set(filter(lambda i: [row, i] if self._is_empty[value_candidate][row][i] else None, range(0, SIZE)))
+                    by_square_positions = [[i, j] for i in range(row - row % 3, row - row % 3 + 3) for j in range(column - column % 3, column - column % 3 + 3)]
+                    by_square = list(filter(lambda position: position if self._is_empty[value_candidate][position[0]][position[1]] else None, by_square_positions))
+                    if len(by_row) == 1 and len(by_column) == 1 and len(by_square) == 1:
+                        self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
+                        self._compute_candidate()
+
+
+    def print_candidates(self):
+        for value_0 in range(0, SIZE):
+            print("")
+            print(f"Candidates for {value_0 + 1}:")
+            for row in range(0, SIZE):
+                for column in range(0, SIZE):
+                    print(f"{'X' if self._is_empty[value_0][row][column] else ' '} ", end="")
+                    if column == 2 or column == 5:
+                        print("| ", end="")
+                print("")
+                if row == 2 or row == 5:
+                    print("- - - + - - - + - - -")
+
+    @staticmethod
+    def _empty_candidates() -> list[list[list[bool]]]:
+        # [[list(range(0,3)) for row in range(0,9)] for column in range(0,3) for value in range(0,3)] ??
+        result: list[list[list[bool]]] = []
+        for cell_value in range(0, SIZE):
+            this_value = []
+            for row_value in range(0, SIZE):
+                row = []
+                for column_value in range(0, SIZE):
+                    row.append(True)
+                this_value.append(row)
+            result.append(this_value)
+        return result
+
+    def __set_occupied(self, row, column, value_0):
+        self._is_empty[value_0][row][column] = False
+
+    def _compute_candidate(self):
+        for row_value in range(0, SIZE):
+            for column_value in range(0, SIZE):
+                value_ = self.value[row_value][column_value]
+                if value_ is None:
+                    continue
+                value_0 = value_ - 1
+                consume(self.__set_occupied(row_value, column_value, value_0) for value_0 in range(0, SIZE))
+                consume(self.__set_occupied(row_value, column_value, value_0) for row_value in range(0, SIZE))
+                consume(self.__set_occupied(row_value, column_value, value_0) for column_value in range(0, SIZE))
+                self.__set_occupied_square(row_value, column_value, value_0)
+
+    def __set_occupied_square(self, row_value: int, column_value: int, value_0: int):
+        square_row_begin = row_value - row_value % 3
+        square_column_begin = column_value - column_value % 3
+        for row_value in range(square_row_begin, square_row_begin + 2 + 1):
+            for column_value in range(square_column_begin, square_column_begin + 2 + 1):
+                self.__set_occupied(row_value, column_value, value_0)
 
 
 class IO:
@@ -128,6 +204,26 @@ class TestIOTest(unittest.TestCase):
         sudoku = IO().load(raw_values)
 
         self.assertFalse(sudoku.is_correct())
+
+    def test_complete_simple_without_ambiguity(self):
+        # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/solved1.sud
+        raw_values = [
+            "123456789",
+            " 56789123",
+            "789123456",
+            "214365897",
+            "36589721 ",
+            "89721 365",
+            "5 16 2978",
+            "6 2978531",
+            "978531642"
+        ]
+        sudoku = IO().load(raw_values)
+
+        sudoku.solve()
+
+        self.assertTrue(sudoku.is_correct())
+        self.assertTrue(sudoku.is_complete())
 
 
 if __name__ == '__main__':
