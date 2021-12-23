@@ -36,7 +36,7 @@ class Sudoku:
     def solve(self):
         self._compute_candidate()
         # self.print_candidates()
-        while (self._occupied_cells() != SIZE * SIZE):
+        while self._occupied_cells() != SIZE * SIZE:
             for value_candidate in range(0, SIZE):
                 for row in range(0, SIZE):
                     for column in range(0, SIZE):
