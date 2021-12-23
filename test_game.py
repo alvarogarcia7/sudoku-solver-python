@@ -29,7 +29,7 @@ class Sudoku:
 
     def is_correct(self):
         try:
-            return all([sorted(row) == list(range(1, 10)) for row in self.value])
+            return all([sorted(row) == list(range(1, SIZE + 1)) for row in self.value])
         except TypeError:
             return False
 
