@@ -16,6 +16,14 @@ class Sudoku:
         # value (0_based) -> row -> column
         self._is_empty: list[list[list[bool]]] = self._empty_candidates()
 
+    def _occupied_cells(self):
+        result = 0
+        for row in range(0, SIZE):
+            for column in range(0, SIZE):
+                if self.value[row][column] is not None:
+                    result += 1
+        return result
+
     def is_complete(self):
         return all([len(list(filter(lambda cell: cell is not None, row))) == 9 for row in self.value])
 
@@ -28,19 +36,24 @@ class Sudoku:
     def solve(self):
         self._compute_candidate()
         # self.print_candidates()
-        for value_candidate in range(0, SIZE):
-            for row in range(0, SIZE):
-                for column in range(0, SIZE):
-                    value_ = self.value[row][column]
-                    if value_ is not None:
-                        continue
-                    by_row = set(filter(lambda i: [i, column] if self._is_empty[value_candidate][i][column] else None, range(0, SIZE)))
-                    by_column = set(filter(lambda i: [row, i] if self._is_empty[value_candidate][row][i] else None, range(0, SIZE)))
-                    by_square_positions = [[i, j] for i in range(row - row % 3, row - row % 3 + 3) for j in range(column - column % 3, column - column % 3 + 3)]
-                    by_square = list(filter(lambda position: position if self._is_empty[value_candidate][position[0]][position[1]] else None, by_square_positions))
-                    if len(by_row) == 1 and len(by_column) == 1 and len(by_square) == 1:
-                        self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
-                        self._compute_candidate()
+        while (self._occupied_cells() != SIZE * SIZE):
+            for value_candidate in range(0, SIZE):
+                for row in range(0, SIZE):
+                    for column in range(0, SIZE):
+                        value_ = self.value[row][column]
+                        if value_ is not None:
+                            continue
+                        by_row = set(filter(lambda i: [i, column] if self._is_empty[value_candidate][i][column] else None, range(0, SIZE)))
+                        by_column = set(filter(lambda i: [row, i] if self._is_empty[value_candidate][row][i] else None, range(0, SIZE)))
+                        by_square_positions = [[i, j] for i in range(row - row % 3, row - row % 3 + 3) for j in range(column - column % 3, column - column % 3 + 3)]
+                        by_square = list(filter(lambda position: position if self._is_empty[value_candidate][position[0]][position[1]] else None, by_square_positions))
+                        if len(by_row) == 1 and len(by_column) == 1 and len(by_square) == 1:
+                            self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
+                            self._compute_candidate()
+
+                        if len(by_square) == 1:
+                            self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
+                            self._compute_candidate()
 
 
     def print_candidates(self):
@@ -217,6 +230,26 @@ class TestIOTest(unittest.TestCase):
             "5 16 2978",
             "6 2978531",
             "978531642"
+        ]
+        sudoku = IO().load(raw_values)
+
+        sudoku.solve()
+
+        self.assertTrue(sudoku.is_correct())
+        self.assertTrue(sudoku.is_complete())
+
+    def test_complete_simple_without_ambiguity_2(self):
+        # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/easy1.sud
+        raw_values = [
+            "  3 2 6  ",
+            "9  3 5  1",
+            "  18 64  ",
+            "  81 29  ",
+            "7       8",
+            "  67 82  ",
+            "  26 95  ",
+            "8  2 3  9",
+            "  5 1 3  ",
         ]
         sudoku = IO().load(raw_values)
 
