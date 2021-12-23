@@ -258,6 +258,26 @@ class TestIOTest(unittest.TestCase):
         self.assertTrue(sudoku.is_correct())
         self.assertTrue(sudoku.is_complete())
 
+    def test_complete_simple_without_ambiguity_3(self):
+        # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/easy2.sud
+        raw_values = [
+             "2   8 3  ",
+             " 6  7  84",
+             " 3 5  2 9",
+             "   1 54 8",
+             "         ",
+             "4 27 6   ",
+             "3 1  7 4 ",
+             "72  4  6 ",
+             "  4 1   3"
+        ]
+        sudoku = IO().load(raw_values)
+
+        sudoku.solve()
+
+        self.assertTrue(sudoku.is_correct())
+        self.assertTrue(sudoku.is_complete())
+
 
 if __name__ == '__main__':
     unittest.main()
