@@ -36,6 +36,12 @@ class Sudoku:
 
     def solve(self):
         self._compute_candidate()
+        self._deduce_candidates()
+
+        logger.debug("Nothing found")
+        self.print_candidates()
+
+    def _deduce_candidates(self):
         while self._occupied_cells() != SIZE * SIZE:
             filled_this_iteration: bool = False
             for value_candidate in range(0, SIZE):
@@ -47,9 +53,6 @@ class Sudoku:
                         filled_this_iteration |= self._fill_candidate_in(column, row, value_candidate)
             if not filled_this_iteration:
                 break
-
-        logger.debug("Nothing found")
-        self.print_candidates()
 
     def _fill_candidate_in(self, column, row, value_candidate):
         filled_this_iteration = False
