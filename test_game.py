@@ -53,9 +53,8 @@ class Sudoku:
 
     def _fill_candidate_in(self, column, row, value_candidate):
         filled_this_iteration = 0
-        by_row = set(
-            filter(lambda i: [i, column] if self._is_empty[value_candidate][i][column] else None, range(0, SIZE)))
-        by_column = set(filter(lambda i: [row, i] if self._is_empty[value_candidate][row][i] else None, range(0, SIZE)))
+        by_row = list(filter(lambda i: [i, column] if self._is_empty[value_candidate][i][column] else None, range(0, SIZE)))
+        by_column = list(filter(lambda i: [row, i] if self._is_empty[value_candidate][row][i] else None, range(0, SIZE)))
         by_square_positions = [[i, j] for i in range(row - row % 3, row - row % 3 + 3) for j in
                                range(column - column % 3, column - column % 3 + 3)]
         by_square = list(
