@@ -29,11 +29,48 @@ class Sudoku:
     def is_complete(self):
         return all([len(list(filter(lambda cell: cell is not None, row))) == 9 for row in self.value])
 
+    @staticmethod
+    def _square_for(row, column):
+        x = row // 3
+        y = column // 3
+        return x * 3 + y
+
     def is_correct(self):
-        try:
-            return all([sorted(row) == list(range(1, SIZE + 1)) for row in self.value])
-        except TypeError:
-            return False
+        frequency_column: list[list[int]] = [[0 for _ in range(9)] for _ in range(9)]
+        frequency_square: list[list[int]] = [[0 for _ in range(9)] for _ in range(9)]
+        frequency_row: list[list[int]] = [[0 for _ in range(9)] for _ in range(9)]
+        for row in range(0, SIZE):
+            for column in range(0, SIZE):
+                value_optional = self.value[row][column]
+                if value_optional is None: continue
+                value_0 = value_optional - 1
+                frequency_row[row][value_0] += 1
+                frequency_column[column][value_0] += 1
+                frequency_square[Sudoku._square_for(row, column)][value_0] += 1
+
+        for i in range(0, len(frequency_row)):
+            for value_0 in range(0, SIZE):
+                if frequency_row[i][value_0] > 1:
+                    # logger.debug(f"Repeated element {value_0 + 1} in row {i}")
+                    return False
+
+        for i in range(0, len(frequency_column)):
+            for value_0 in range(0, SIZE):
+                if frequency_column[i][value_0] > 1:
+                    # logger.debug(f"Repeated element {value_0 + 1} in column {i}")
+                    return False
+
+        for i in range(0, len(frequency_square)):
+            for value_0 in range(0, SIZE):
+                if frequency_square[i][value_0] > 1:
+                    # logger.debug(f"Repeated element {value_0 + 1} in square {i}")
+                    return False
+
+
+        return True
+
+
+
 
     def solve(self):
         self._compute_candidate()
@@ -260,7 +297,7 @@ class TestIOTest(unittest.TestCase):
         # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/solved1.sud
         raw_values = [
             "123456789",
-            "156789123",
+            "156789123", # repeated element 1
             "789123456",
             "214365897",
             "365897214",
@@ -268,6 +305,74 @@ class TestIOTest(unittest.TestCase):
             "531642978",
             "642978531",
             "978531642"
+        ]
+        sudoku = IO().load(raw_values)
+
+        self.assertFalse(sudoku.is_correct())
+
+    def test_check_is_correct_while_incomplete(self):
+        # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/solved1.sud
+        raw_values = [
+            "1        ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         "
+        ]
+        sudoku = IO().load(raw_values)
+
+        self.assertTrue(sudoku.is_correct())
+
+    def test_check_is_not_correct_while_incomplete_in_column(self):
+        # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/solved1.sud
+        raw_values = [
+            "1        ",
+            "1        ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         "
+        ]
+        sudoku = IO().load(raw_values)
+
+        self.assertFalse(sudoku.is_correct())
+
+    def test_check_is_not_correct_while_incomplete_in_row(self):
+        # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/solved1.sud
+        raw_values = [
+            "11       ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         "
+        ]
+        sudoku = IO().load(raw_values)
+
+        self.assertFalse(sudoku.is_correct())
+
+    def test_check_is_not_correct_while_incomplete_in_square(self):
+        # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/solved1.sud
+        raw_values = [
+            "1        ",
+            "         ",
+            "  1      ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         ",
+            "         "
         ]
         sudoku = IO().load(raw_values)
 
@@ -292,6 +397,28 @@ class TestIOTest(unittest.TestCase):
 
         self.assertTrue(sudoku.is_correct())
         self.assertTrue(sudoku.is_complete())
+
+    def test_find_square(self):
+        map_square = [[0, 0, 0, 0, 0, 0, 0, 0, 0] for _ in range(0, SIZE)]
+
+        for row in range(0, SIZE):
+            for column in range(0, SIZE):
+                map_square[row][column] = Sudoku._square_for(row, column)
+
+        self.assertEqual(
+            [[0, 0, 0, 1, 1, 1, 2, 2, 2],
+             [0, 0, 0, 1, 1, 1, 2, 2, 2],
+             [0, 0, 0, 1, 1, 1, 2, 2, 2],
+
+             [3, 3, 3, 4, 4, 4, 5, 5, 5],
+             [3, 3, 3, 4, 4, 4, 5, 5, 5],
+             [3, 3, 3, 4, 4, 4, 5, 5, 5],
+
+             [6, 6, 6, 7, 7, 7, 8, 8, 8],
+             [6, 6, 6, 7, 7, 7, 8, 8, 8],
+             [6, 6, 6, 7, 7, 7, 8, 8, 8]],
+            map_square)
+
 
     def test_complete_simple_without_ambiguity_2(self):
         # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/easy1.sud
