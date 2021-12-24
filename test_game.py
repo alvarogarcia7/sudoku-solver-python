@@ -36,7 +36,6 @@ class Sudoku:
 
     def solve(self):
         self._compute_candidate()
-        # self.print_candidates()
         while self._occupied_cells() != SIZE * SIZE:
             filled_this_iteration: bool = False
             for value_candidate in range(0, SIZE):
