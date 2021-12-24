@@ -38,21 +38,21 @@ class Sudoku:
         self._compute_candidate()
         # self.print_candidates()
         while self._occupied_cells() != SIZE * SIZE:
-            filled_this_iteration = 0
+            filled_this_iteration: bool = False
             for value_candidate in range(0, SIZE):
                 for row in range(0, SIZE):
                     for column in range(0, SIZE):
                         value_ = self.value[row][column]
                         if value_ is not None:
                             continue
-                        filled_this_iteration += self._fill_candidate_in(column, row, value_candidate)
-            if filled_this_iteration == 0:
+                        filled_this_iteration |= self._fill_candidate_in(column, row, value_candidate)
+            if not filled_this_iteration:
                 logger.debug("Nothing found")
                 self.print_candidates()
                 break
 
     def _fill_candidate_in(self, column, row, value_candidate):
-        filled_this_iteration = 0
+        filled_this_iteration = False
         by_row = list(filter(lambda i: [i, column] if self._is_empty[value_candidate][i][column] else None, range(0, SIZE)))
         by_column = list(filter(lambda i: [row, i] if self._is_empty[value_candidate][row][i] else None, range(0, SIZE)))
         by_square_positions = [[i, j] for i in range(row - row % 3, row - row % 3 + 3) for j in
@@ -63,11 +63,11 @@ class Sudoku:
         if len(by_row) == 1 and len(by_column) == 1 and len(by_square) == 1:
             self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
             self._compute_candidate()
-            filled_this_iteration += 1
+            filled_this_iteration = True
         if len(by_square) == 1:
             self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
             self._compute_candidate()
-            filled_this_iteration += 1
+            filled_this_iteration = True
         return filled_this_iteration
 
     def print_candidates(self, function=logger.debug):
