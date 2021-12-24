@@ -46,9 +46,10 @@ class Sudoku:
                             continue
                         filled_this_iteration |= self._fill_candidate_in(column, row, value_candidate)
             if not filled_this_iteration:
-                logger.debug("Nothing found")
-                self.print_candidates()
                 break
+
+        logger.debug("Nothing found")
+        self.print_candidates()
 
     def _fill_candidate_in(self, column, row, value_candidate):
         filled_this_iteration = False
