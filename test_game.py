@@ -51,12 +51,12 @@ class Sudoku:
                         if len(by_row) == 1 and len(by_column) == 1 and len(by_square) == 1:
                             self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
                             self._compute_candidate()
-                            filled_this_iteration+=1
+                            filled_this_iteration += 1
 
                         if len(by_square) == 1:
                             self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
                             self._compute_candidate()
-                            filled_this_iteration+=1
+                            filled_this_iteration += 1
             if filled_this_iteration == 0:
                 print("Nothing found")
                 self.print_candidates()
@@ -111,6 +111,18 @@ class Sudoku:
         for row_value in range(square_row_begin, square_row_begin + 2 + 1):
             for column_value in range(square_column_begin, square_column_begin + 2 + 1):
                 self.__set_occupied(row_value, column_value, value_0)
+
+    def print_values(self):
+        print("")
+        print("Values:")
+        for row in range(0, SIZE):
+            for column in range(0, SIZE):
+                print(f"{self.value[row][column] if self.value[row][column] is not None else ' '} ", end="")
+                if column == 2 or column == 5:
+                    print("| ", end="")
+            print("")
+            if row == 2 or row == 5:
+                print("- - - + - - - + - - -")
 
 
 class IO:
