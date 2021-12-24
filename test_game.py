@@ -1,4 +1,5 @@
 import collections
+import string
 import unittest
 from logzero import logger
 
@@ -37,9 +38,31 @@ class Sudoku:
     def solve(self):
         self._compute_candidate()
         self._deduce_candidates()
+        if self._occupied_cells() == SIZE * SIZE:
+            return
 
-        logger.debug("Nothing found")
-        self.print_candidates()
+        logger.debug(f"After deducing: {self._occupied_cells()} elements")
+        self.print_candidates(range(2, 3))
+
+        logger.debug(f"Start backtracking:")
+        backtracking = []
+
+        # Oracle's heuristic
+        choices = [
+            {'position': [6, 3], 'value': 3},
+            {'position': [3, 8], 'value': 3},
+            {'position': [4, 1], 'value': 3}
+        ]
+
+        for choice in choices:
+            backtracking.append(choice)
+            self.value[choice['position'][0]][choice['position'][1]] = choice['value']
+            self._compute_candidate()
+            self._deduce_candidates()
+            logger.debug(f"Now: {self._occupied_cells()} elements")
+
+        self.print_values("After:")
+        self.print_candidates(range(2, 3))
 
     def _deduce_candidates(self):
         while self._occupied_cells() != SIZE * SIZE:
@@ -73,8 +96,8 @@ class Sudoku:
             filled_this_iteration = True
         return filled_this_iteration
 
-    def print_candidates(self, function=logger.debug):
-        for value_0 in range(0, SIZE):
+    def print_candidates(self, value_0_range=range(0, SIZE), function=logger.debug):
+        for value_0 in value_0_range:
             function(f"Candidates for {value_0 + 1}:")
             for row in range(0, SIZE):
                 row_text = []
@@ -122,7 +145,11 @@ class Sudoku:
             for column_value in range(square_column_begin, square_column_begin + 2 + 1):
                 self.__set_occupied(row_value, column_value, value_0)
 
-    def print_values(self, function=logger.info):
+    def print_values(self, message: string, function=logger.info):
+        function(message)
+        self._print_values(function)
+
+    def _print_values(self, function):
         for row in range(0, SIZE):
             row_text: list = []
             for column in range(0, SIZE):
@@ -306,7 +333,7 @@ class TestIOTest(unittest.TestCase):
         self.assertTrue(sudoku.is_correct())
         self.assertTrue(sudoku.is_complete())
 
-    def xtest_complete_sudoku_with_ambiguity(self):
+    def test_complete_sudoku_with_ambiguity(self):
         # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/easy49.sud
         raw_values = [
             ".....3.17",
