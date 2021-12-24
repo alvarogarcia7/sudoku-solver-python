@@ -19,3 +19,6 @@ virtual_setup:
 
 pre-commit: test
 .PHONY: pre-commit
+
+install-dependencies: virtual_setup
+	pip3 install -r requirements.txt

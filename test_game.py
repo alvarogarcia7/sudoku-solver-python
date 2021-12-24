@@ -1,11 +1,12 @@
 import collections
 import unittest
+from logzero import logger
+
 from typing import List, Optional, Any
 
 SIZE: int = 9
 
 consume = collections.deque(maxlen=0).extend
-
 
 class Sudoku:
     def __init__(self, value):
@@ -58,23 +59,22 @@ class Sudoku:
                             self._compute_candidate()
                             filled_this_iteration += 1
             if filled_this_iteration == 0:
-                print("Nothing found")
+                logger.debug("Nothing found")
                 self.print_candidates()
                 break
 
-
-    def print_candidates(self):
+    def print_candidates(self, function=logger.debug):
         for value_0 in range(0, SIZE):
-            print("")
-            print(f"Candidates for {value_0 + 1}:")
+            function(f"Candidates for {value_0 + 1}:")
             for row in range(0, SIZE):
+                row_text = []
                 for column in range(0, SIZE):
-                    print(f"{'X' if self._is_empty[value_0][row][column] else ' '} ", end="")
+                    row_text.append(f"{'X' if self._is_empty[value_0][row][column] else ' '} ")
                     if column == 2 or column == 5:
-                        print("| ", end="")
-                print("")
+                        row_text.append("| ")
+                function("".join(row_text))
                 if row == 2 or row == 5:
-                    print("- - - + - - - + - - -")
+                    function("- - - + - - - + - - -")
 
     @staticmethod
     def _empty_candidates() -> list[list[list[bool]]]:
@@ -112,17 +112,16 @@ class Sudoku:
             for column_value in range(square_column_begin, square_column_begin + 2 + 1):
                 self.__set_occupied(row_value, column_value, value_0)
 
-    def print_values(self):
-        print("")
-        print("Values:")
+    def print_values(self, function=logger.info):
         for row in range(0, SIZE):
+            row_text: list = []
             for column in range(0, SIZE):
-                print(f"{self.value[row][column] if self.value[row][column] is not None else ' '} ", end="")
+                row_text.append(f"{self.value[row][column] if self.value[row][column] is not None else ' '} ")
                 if column == 2 or column == 5:
-                    print("| ", end="")
-            print("")
+                    row_text.append("| ")
+            function("".join(row_text))
             if row == 2 or row == 5:
-                print("- - - + - - - + - - -")
+                function("- - - + - - - + - - -")
 
 
 class IO:

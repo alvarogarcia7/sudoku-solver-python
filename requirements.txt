@@ -2,3 +2,4 @@ mypy==0.910
 mypy-extensions==0.4.3
 toml==0.10.2
 typing-extensions==3.10.0.2
+logzero  # see github.com/metachris/logzero
