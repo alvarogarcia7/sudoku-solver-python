@@ -117,10 +117,8 @@ class Sudoku:
     def solve_r(self) -> bool:
         if self.is_correct() and self._occupied_cells() == SIZE * SIZE:
             return True
-        # self.print_values("Before")
         self._compute_candidate()
         choices = self._choices()
-        # logger.debug(f"Choices = {choices}")
         for choice in choices:
             aux = self._copy()
             self.value[choice['position'][0]][choice['position'][1]] = choice['value']
