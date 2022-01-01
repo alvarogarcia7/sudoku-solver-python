@@ -81,16 +81,6 @@ class Sudoku:
             return
 
         logger.debug(f"After deducing: {self._occupied_cells()} elements")
-        # self.print_candidates(range(2, 3))
-
-        # logger.debug(f"Start backtracking:")
-        # self._apply_oracle_choice({'position': [1, 4], 'value': 2})
-        # self._apply_oracle_choice({'position': [0, 6], 'value': 5})
-        # self._apply_oracle_choice({'position': [5, 4], 'value': 1})
-        # self._apply_oracle_choice({'position': [5, 1], 'value': 3})
-        # self._apply_oracle_choice({'position': [5, 6], 'value': 9})
-        # self._apply_oracle_choice({'position': [2, 5], 'value': 1})
-        # self._apply_oracle_choice({'position': [3, 7], 'value': 6})
         self._compute_candidate()
         self._deduce_candidates()
         self.print_values("Before start backtracking")
@@ -98,7 +88,6 @@ class Sudoku:
         self.solve_r()
 
         self.print_values("After backtracking")
-        # self.print_candidates()
 
     def solve_r(self) -> bool:
         if self.is_correct() and self._occupied_cells() == SIZE * SIZE:
