@@ -14,7 +14,6 @@ consume = collections.deque(maxlen=0).extend
 
 class Sudoku:
     def __init__(self, value):
-        self._taken_choices = []
         assert len(value) == 9
         # https://stackoverflow.com/questions/35429478/testing-and-assertion-in-list-comprehension
         assert reduce(and_, [len(row) == 9 for row in value])
@@ -125,7 +124,6 @@ class Sudoku:
         for choice in choices:
             aux = self._copy()
             self.value[choice['position'][0]][choice['position'][1]] = choice['value']
-            self._add_taken_choice(choice)
             # logger.debug(f"Taken choices: {self._taken_choices}")
             self._compute_candidate()
             # if not self.is_correct():
@@ -144,7 +142,6 @@ class Sudoku:
             # self.print_values(f"REVERTING, as it was not correct. Now. choices = {len(self._choices())}")
             # logger.debug("Correct? " + self.is_correct().__str__())
             self._copy_from(aux)
-            self._remove_taken_choice()
             # self.print_values(f"Removing choice={choice} at the end")
 
         return False
@@ -284,12 +281,6 @@ class Sudoku:
 
     def _apply_oracle_choice(self, param):
         self.value[param['position'][0]][param['position'][1]] = param['value']  # Oracle
-
-    def _add_taken_choice(self, choice):
-        self._taken_choices.append(choice)
-
-    def _remove_taken_choice(self):
-        self._taken_choices.pop()
 
 
 class IO:
