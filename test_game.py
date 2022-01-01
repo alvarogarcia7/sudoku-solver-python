@@ -124,25 +124,12 @@ class Sudoku:
         for choice in choices:
             aux = self._copy()
             self.value[choice['position'][0]][choice['position'][1]] = choice['value']
-            # logger.debug(f"Taken choices: {self._taken_choices}")
             self._compute_candidate()
-            # if not self.is_correct():
-            #     logger.debug(f"{choice} is not valid. Removing")
-            #     self.value[choice['position'][0]][choice['position'][1]] = None
-            #     continue
-
-            # self.print_values(f"After putting {choice}")
             self._deduce_candidates()
-            # self.print_values(f"{choice}. After deducing")
-            # logger.debug(f"Now: {self._occupied_cells()} elements")
             result = self.solve_r()
             if result:
                 return result
-
-            # self.print_values(f"REVERTING, as it was not correct. Now. choices = {len(self._choices())}")
-            # logger.debug("Correct? " + self.is_correct().__str__())
             self._copy_from(aux)
-            # self.print_values(f"Removing choice={choice} at the end")
 
         return False
         # logger.debug(f"Still correct? {self.is_correct()}")
