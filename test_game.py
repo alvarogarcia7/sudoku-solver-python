@@ -126,9 +126,8 @@ class Sudoku:
             self.value[choice['position'][0]][choice['position'][1]] = choice['value']
             self._compute_candidate()
             self._deduce_candidates()
-            result = self.solve_r()
-            if result:
-                return result
+            if self.solve_r():
+                return True
             self._copy_from(aux)
 
         return False
