@@ -100,20 +100,6 @@ class Sudoku:
         self.print_values("After backtracking")
         # self.print_candidates()
 
-    def _contains_all_oracle(self):
-        mandatory = [{'position': [0, 6], 'value': 5},
-                     {'position': [5, 4], 'value': 1},
-                     {'position': [5, 1], 'value': 3},
-                     {'position': [5, 6], 'value': 9},
-                     {'position': [2, 5], 'value': 1},
-                     # {'position': [3, 7], 'value': 6}
-                     ]
-
-        for choice in mandatory:
-            if choice not in self._taken_choices:
-                return False
-        return True
-
     def solve_r(self) -> bool:
         if self.is_correct() and self._occupied_cells() == SIZE * SIZE:
             return True
