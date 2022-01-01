@@ -2,6 +2,8 @@ import collections
 import string
 import unittest
 from logzero import logger
+from functools import reduce
+from operator import and_
 
 from typing import List, Optional, Any
 
@@ -9,10 +11,13 @@ SIZE: int = 9
 
 consume = collections.deque(maxlen=0).extend
 
+
 class Sudoku:
     def __init__(self, value):
+        self._taken_choices = []
         assert len(value) == 9
-        assert len(value[0]) == 9
+        # https://stackoverflow.com/questions/35429478/testing-and-assertion-in-list-comprehension
+        assert reduce(and_, [len(row) == 9 for row in value])
 
         self.value = value
         # value (0_based) -> row -> column
@@ -66,42 +71,87 @@ class Sudoku:
                     # logger.debug(f"Repeated element {value_0 + 1} in square {i}")
                     return False
 
-
         return True
 
-
-
-
     def solve(self):
+        if not self.is_correct():
+            return
         self._compute_candidate()
         self._deduce_candidates()
         if self._occupied_cells() == SIZE * SIZE:
             return
 
         logger.debug(f"After deducing: {self._occupied_cells()} elements")
-        self.print_candidates(range(2, 3))
+        # self.print_candidates(range(2, 3))
 
-        logger.debug(f"Start backtracking:")
-        backtracking = []
+        # logger.debug(f"Start backtracking:")
+        # self._apply_oracle_choice({'position': [1, 4], 'value': 2})
+        # self._apply_oracle_choice({'position': [0, 6], 'value': 5})
+        # self._apply_oracle_choice({'position': [5, 4], 'value': 1})
+        # self._apply_oracle_choice({'position': [5, 1], 'value': 3})
+        # self._apply_oracle_choice({'position': [5, 6], 'value': 9})
+        # self._apply_oracle_choice({'position': [2, 5], 'value': 1})
+        # self._apply_oracle_choice({'position': [3, 7], 'value': 6})
+        self._compute_candidate()
+        self._deduce_candidates()
+        self.print_values("Before start backtracking")
 
-        # Oracle's heuristic
-        choices = [
-            {'position': [6, 3], 'value': 3},
-            {'position': [3, 8], 'value': 3},
-            {'position': [4, 1], 'value': 3}
-        ]
+        self.solve_r()
 
+        self.print_values("After backtracking")
+        # self.print_candidates()
+
+    def _contains_all_oracle(self):
+        mandatory = [{'position': [0, 6], 'value': 5},
+                     {'position': [5, 4], 'value': 1},
+                     {'position': [5, 1], 'value': 3},
+                     {'position': [5, 6], 'value': 9},
+                     {'position': [2, 5], 'value': 1},
+                     # {'position': [3, 7], 'value': 6}
+                     ]
+
+        for choice in mandatory:
+            if choice not in self._taken_choices:
+                return False
+        return True
+
+    def solve_r(self) -> bool:
+        if self.is_correct() and self._occupied_cells() == SIZE * SIZE:
+            return True
+        # self.print_values("Before")
+        self._compute_candidate()
+        choices = self._choices()
+        # logger.debug(f"Choices = {choices}")
         for choice in choices:
-            backtracking.append(choice)
+            aux = self._copy()
             self.value[choice['position'][0]][choice['position'][1]] = choice['value']
+            self._add_taken_choice(choice)
+            # logger.debug(f"Taken choices: {self._taken_choices}")
             self._compute_candidate()
-            self._deduce_candidates()
-            logger.debug(f"Now: {self._occupied_cells()} elements")
+            # if not self.is_correct():
+            #     logger.debug(f"{choice} is not valid. Removing")
+            #     self.value[choice['position'][0]][choice['position'][1]] = None
+            #     continue
 
-        self.print_values("After:")
-        self.print_candidates(range(2, 3))
+            # self.print_values(f"After putting {choice}")
+            self._deduce_candidates()
+            # self.print_values(f"{choice}. After deducing")
+            # logger.debug(f"Now: {self._occupied_cells()} elements")
+            result = self.solve_r()
+            if result:
+                return result
+
+            # self.print_values(f"REVERTING, as it was not correct. Now. choices = {len(self._choices())}")
+            # logger.debug("Correct? " + self.is_correct().__str__())
+            self._copy_from(aux)
+            self._remove_taken_choice()
+            # self.print_values(f"Removing choice={choice} at the end")
+
+        return False
+        # logger.debug(f"Still correct? {self.is_correct()}")
 
     def _deduce_candidates(self):
+        assert (self.is_correct())
         while self._occupied_cells() != SIZE * SIZE:
             filled_this_iteration: bool = False
             for value_candidate in range(0, SIZE):
@@ -116,8 +166,10 @@ class Sudoku:
 
     def _fill_candidate_in(self, column, row, value_candidate):
         filled_this_iteration = False
-        by_row = list(filter(lambda i: [i, column] if self._is_empty[value_candidate][i][column] else None, range(0, SIZE)))
-        by_column = list(filter(lambda i: [row, i] if self._is_empty[value_candidate][row][i] else None, range(0, SIZE)))
+        by_row = list(
+            filter(lambda i: [i, column] if self._is_empty[value_candidate][i][column] else None, range(0, SIZE)))
+        by_column = list(
+            filter(lambda i: [row, i] if self._is_empty[value_candidate][row][i] else None, range(0, SIZE)))
         by_square_positions = [[i, j] for i in range(row - row % 3, row - row % 3 + 3) for j in
                                range(column - column % 3, column - column % 3 + 3)]
         by_square = list(
@@ -164,6 +216,7 @@ class Sudoku:
         self._is_empty[value_0][row][column] = False
 
     def _compute_candidate(self):
+        self._is_empty = self._empty_candidates()
         for row_value in range(0, SIZE):
             for column_value in range(0, SIZE):
                 value_ = self.value[row_value][column_value]
@@ -183,7 +236,7 @@ class Sudoku:
                 self.__set_occupied(row_value, column_value, value_0)
 
     def print_values(self, message: string, function=logger.info):
-        function(message)
+        function(f"{message}: is correct? {self.is_correct().__str__()}")
         self._print_values(function)
 
     def _print_values(self, function):
@@ -197,10 +250,52 @@ class Sudoku:
             if row == 2 or row == 5:
                 function("- - - + - - - + - - -")
 
+    def _choices(self):
+        min_ocurrences = 9
+        selected_positions: list[[int, int]] = []
+        for value_0 in range(SIZE):
+            # column with the least candidates
+            for row in range(0, SIZE):
+                current_positions: list[[int, int]] = []
+                current_occurrences = 0
+                for column in range(0, SIZE):
+                    if self._is_empty[value_0][row][column]:
+                        current_occurrences += 1
+                        current_positions.append({'position': [row, column], 'value': value_0 + 1})
+                if 0 < current_occurrences < min_ocurrences:
+                    min_ocurrences = current_occurrences
+                    selected_positions = current_positions.copy()
+
+        if selected_positions is not None:
+            return selected_positions
+        return []
+
+    def _copy(self) -> list[list[int]]:
+        result = []
+        for row in self.value:
+            result.append(row.copy())
+        return result
+
+    def _copy_from(self, aux) -> None:
+        self.value = []
+        for row in aux:
+            self.value.append(row.copy())
+        self._compute_candidate()
+
+    def _apply_oracle_choice(self, param):
+        self.value[param['position'][0]][param['position'][1]] = param['value']  # Oracle
+
+    def _add_taken_choice(self, choice):
+        self._taken_choices.append(choice)
+
+    def _remove_taken_choice(self):
+        self._taken_choices.pop()
+
 
 class IO:
     def load(self, raw_values):
-        x: list[list[int]] = [list(map(lambda x: int(x) if x != ' ' and x!='.' else None, raw_value)) for raw_value in raw_values]
+        x: list[list[int]] = [list(map(lambda x: int(x) if x != ' ' and x != '.' else None, raw_value)) for raw_value in
+                              raw_values]
         return Sudoku(x)
 
     def serialize(self, sudoku: Sudoku):
@@ -297,7 +392,7 @@ class TestIOTest(unittest.TestCase):
         # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/solved1.sud
         raw_values = [
             "123456789",
-            "156789123", # repeated element 1
+            "156789123",  # repeated element 1
             "789123456",
             "214365897",
             "365897214",
@@ -419,7 +514,6 @@ class TestIOTest(unittest.TestCase):
              [6, 6, 6, 7, 7, 7, 8, 8, 8]],
             map_square)
 
-
     def test_complete_simple_without_ambiguity_2(self):
         # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/easy1.sud
         raw_values = [
@@ -443,15 +537,15 @@ class TestIOTest(unittest.TestCase):
     def test_complete_simple_without_ambiguity_3(self):
         # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/easy2.sud
         raw_values = [
-             "2   8 3  ",
-             " 6  7  84",
-             " 3 5  2 9",
-             "   1 54 8",
-             "         ",
-             "4 27 6   ",
-             "3 1  7 4 ",
-             "72  4  6 ",
-             "  4 1   3"
+            "2   8 3  ",
+            " 6  7  84",
+            " 3 5  2 9",
+            "   1 54 8",
+            "         ",
+            "4 27 6   ",
+            "3 1  7 4 ",
+            "72  4  6 ",
+            "  4 1   3"
         ]
         sudoku = IO().load(raw_values)
 
@@ -460,7 +554,7 @@ class TestIOTest(unittest.TestCase):
         self.assertTrue(sudoku.is_correct())
         self.assertTrue(sudoku.is_complete())
 
-    def xtest_complete_sudoku_with_ambiguity(self):
+    def test_complete_sudoku_with_ambiguity(self):
         # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/easy49.sud
         raw_values = [
             ".....3.17",
@@ -499,7 +593,6 @@ class TestIOTest(unittest.TestCase):
 
         self.assertFalse(sudoku.is_correct())
         self.assertFalse(sudoku.is_complete())
-
 
 
 if __name__ == '__main__':
