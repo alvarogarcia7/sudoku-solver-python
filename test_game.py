@@ -1,3 +1,4 @@
+import functools
 import string
 import timeit
 import unittest
@@ -18,6 +19,11 @@ class Sudoku:
         self.value = value
         # value (0_based) -> row -> column
         self._is_empty: list[list[list[bool]]] = self._empty_candidates()
+
+    @functools.cache
+    def cells_for_square_at(self, row: int, column: int):
+        return [[i, j] for i in range(row - row % 3, row - row % 3 + 3) for j in
+                range(column - column % 3, column - column % 3 + 3)]
 
     def _occupied_cells(self):
         result = 0
@@ -116,12 +122,11 @@ class Sudoku:
 
     def _fill_candidate_in(self, column, row, value_candidate):
         filled_this_iteration = False
+        by_square_positions = self.cells_for_square_at(row, column)
         by_row = list(
             filter(lambda i: [i, column] if self._is_empty[value_candidate][i][column] else None, range(0, SIZE)))
         by_column = list(
             filter(lambda i: [row, i] if self._is_empty[value_candidate][row][i] else None, range(0, SIZE)))
-        by_square_positions = [[i, j] for i in range(row - row % 3, row - row % 3 + 3) for j in
-                               range(column - column % 3, column - column % 3 + 3)]
         by_square = list(
             filter(lambda position: position if self._is_empty[value_candidate][position[0]][position[1]] else None,
                    by_square_positions))
@@ -270,11 +275,8 @@ class Sudoku:
                 self.__set_occupied_square(row_value, column_value, value_0)
 
     def __set_occupied_square(self, row_value: int, column_value: int, value_0: int):
-        square_row_begin = row_value - row_value % 3
-        square_column_begin = column_value - column_value % 3
-        for row_value in range(square_row_begin, square_row_begin + 2 + 1):
-            for column_value in range(square_column_begin, square_column_begin + 2 + 1):
-                self._is_empty[value_0][row_value][column_value] = False
+        for [row_value, column_value] in self.cells_for_square_at(row_value, column_value):
+            self._is_empty[value_0][row_value][column_value] = False
 
     def print_values(self, message: string, function=logger.info):
         function(f"{message}: is correct? {self.is_correct().__str__()}")
