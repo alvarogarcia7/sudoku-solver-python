@@ -97,8 +97,7 @@ class Sudoku:
         self._compute_candidate()
         for choice in self._choices():
             aux = self._copy()
-            self.value[choice['position'][0]][choice['position'][1]] = choice['value']
-            self._compute_candidate_partial(choice['position'][0], choice['position'][1], choice['value'] - 1)
+            self._position(choice['position'][0], choice['position'][1], choice['value'])
             self._deduce_candidates()
             if self.solve_r():
                 return True
@@ -132,12 +131,10 @@ class Sudoku:
             filter(lambda position: position if self._is_empty[value_candidate][position[0]][position[1]] else None,
                    by_square_positions))
         if len(by_row) == 1 and len(by_column) == 1 and len(by_square) == 1:
-            self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
-            self._compute_candidate_partial(by_square[0][0], by_square[0][1], value_candidate)
+            self._position(by_square[0][0], by_square[0][1], value_candidate + 1)
             filled_this_iteration = True
         if len(by_square) == 1:
-            self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
-            self._compute_candidate_partial(by_square[0][0], by_square[0][1], value_candidate)
+            self._position(by_square[0][0], by_square[0][1], value_candidate + 1)
             filled_this_iteration = True
         return filled_this_iteration
 
@@ -331,8 +328,9 @@ class Sudoku:
             self.value.append(row.copy())
         self._compute_candidate()
 
-    def _apply_oracle_choice(self, param):
-        self.value[param['position'][0]][param['position'][1]] = param['value']  # Oracle
+    def _position(self, row: int, column:int , value: int):
+        self.value[row][column] = value
+        self._compute_candidate_partial(row, column, value - 1)
 
 
 class IO:
