@@ -328,7 +328,7 @@ class Sudoku:
             self.value.append(row.copy())
         self._compute_candidate()
 
-    def _position(self, row: int, column:int , value: int):
+    def _position(self, row: int, column: int, value: int):
         self.value[row][column] = value
         self._compute_candidate_partial(row, column, value - 1)
 
@@ -640,9 +640,9 @@ assert(sudoku.is_complete())
             globals={'io': io, 'raw_values': raw_values})
         print(f"best_previous_results = {current_results}")
 
-        best_previous_results = [2.6438339319999997, 2.5542247199999997, 2.6604149489999998, 2.9612890269999994,
-                                 3.202963874, 3.2682676469999983, 3.1660357380000015, 3.083516465999999,
-                                 2.6637779680000016, 2.505950146]
+        best_previous_results = [2.7129376410000003, 3.121830279, 2.676298759, 2.706423612, 2.526655052999999,
+                                 2.5565128, 2.7968125169999993, 2.7978511630000007, 2.5304349759999987,
+                                 2.932820578000001]
         lower_end = mean(best_previous_results) - 3 * stdev(best_previous_results)
 
         difference_in_percentage = (1 - mean(current_results) / mean(best_previous_results)) * 100
