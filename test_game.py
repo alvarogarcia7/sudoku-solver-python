@@ -108,9 +108,18 @@ class Sudoku:
 
     def _deduce_candidates(self):
         assert (self.is_correct())
+        frequency_number: list[int] = [0 for _ in range(9)]
+        for row in range(0, SIZE):
+            for column in range(0, SIZE):
+                value_optional = self.value[row][column]
+                if value_optional is None: continue
+                value_0 = value_optional - 1
+                frequency_number[value_0] += 1
+
         while True:
             filled_this_iteration: bool = False
             for value_candidate in range(0, SIZE):
+                if frequency_number[value_candidate] == SIZE: continue
                 for row in range(0, SIZE):
                     for column in range(0, SIZE):
                         value_ = self.value[row][column]
