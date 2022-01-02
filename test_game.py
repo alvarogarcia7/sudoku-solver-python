@@ -153,7 +153,6 @@ class Sudoku:
 
     @staticmethod
     def _empty_candidates() -> list[list[list[bool]]]:
-        # [[list(range(0,3)) for row in range(0,9)] for column in range(0,3) for value in range(0,3)] ??
         result: list[list[list[bool]]] = [
             [
                 [True, True, True, True, True, True, True, True, True],
@@ -255,14 +254,6 @@ class Sudoku:
                 [True, True, True, True, True, True, True, True, True]
             ]
         ]
-        # for cell_value in range(0, SIZE):
-        #     this_value = []
-        #     for row_value in range(0, SIZE):
-        #         row = []
-        #         for column_value in range(0, SIZE):
-        #             row.append(True)
-        #         this_value.append(row)
-        #     result.append(this_value)
         return result
 
     def _compute_candidate(self):
