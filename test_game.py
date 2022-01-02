@@ -88,8 +88,7 @@ class Sudoku:
         if self.is_correct() and self._occupied_cells() == SIZE * SIZE:
             return True
         self._compute_candidate()
-        choices = self._choices()
-        for choice in choices:
+        for choice in self._choices():
             aux = self._copy()
             self.value[choice['position'][0]][choice['position'][1]] = choice['value']
             self._compute_candidate()
@@ -635,9 +634,9 @@ assert(sudoku.is_complete())
             globals={'io': io, 'raw_values': raw_values})
         print(f"best_previous_results = {current_results}")
 
-        best_previous_results = [6.451339481000001, 6.073884725, 5.980104863999999, 6.045415211000002,
-                                 6.004259040000001, 5.7870871579999985, 5.881087719, 6.030691902000001,
-                                 5.960954622999999, 6.1148847929999945]
+        best_previous_results = [5.599653603999999, 5.380863618999999, 5.741848414, 5.100655839000002,
+                                 5.477117625999998, 5.307637887999995, 5.152684772000001, 5.384085446,
+                                 5.777350020999997, 5.130091862999997]
         lower_end = mean(best_previous_results) - 3 * stdev(best_previous_results)
 
         difference_in_percentage = (1 - mean(current_results) / mean(best_previous_results)) * 100
