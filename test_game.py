@@ -130,22 +130,14 @@ class Sudoku:
                 break
 
     def _fill_candidate_in(self, column, row, value_candidate):
-        filled_this_iteration = False
         by_square_positions = self.cells_for_square_at(row, column)
-        by_row = list(
-            filter(lambda i: [i, column] if self._is_empty[value_candidate][i][column] else None, range(0, SIZE)))
-        by_column = list(
-            filter(lambda i: [row, i] if self._is_empty[value_candidate][row][i] else None, range(0, SIZE)))
         by_square = list(
             filter(lambda position: position if self._is_empty[value_candidate][position[0]][position[1]] else None,
                    by_square_positions))
-        if len(by_row) == 1 and len(by_column) == 1 and len(by_square) == 1:
-            self._position(by_square[0][0], by_square[0][1], value_candidate + 1)
-            filled_this_iteration = True
         if len(by_square) == 1:
             self._position(by_square[0][0], by_square[0][1], value_candidate + 1)
-            filled_this_iteration = True
-        return filled_this_iteration
+            return True
+        return False
 
     def print_candidates(self, value_0_range=range(0, SIZE), function=logger.debug):
         for value_0 in value_0_range:
