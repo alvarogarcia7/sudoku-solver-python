@@ -78,8 +78,6 @@ class Sudoku:
             return
 
         # logger.debug(f"After deducing: {self._occupied_cells()} elements")
-        self._compute_candidate()
-        self._deduce_candidates()
         # self.print_values("Before start backtracking")
 
         self.solve_r()
