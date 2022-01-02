@@ -1,5 +1,6 @@
 import collections
 import string
+import timeit
 import unittest
 from logzero import logger
 from functools import reduce
@@ -523,6 +524,30 @@ class TestIOTest(unittest.TestCase):
 
         self.assertTrue(sudoku.is_correct())
         self.assertTrue(sudoku.is_complete())
+
+    def test_performance_ambiguity_49(self):
+        # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/easy49.sud
+        raw_values = [
+            ".....3.17",
+            ".15..9..8",
+            ".6.......",
+            "1....7...",
+            "..9...2..",
+            "...5....4",
+            ".......2.",
+            "5..6..34.",
+            "34.2....."
+        ]
+        io = IO()
+        print(timeit.repeat(
+            setup='''sudoku = io.load(raw_values)''',
+            stmt='''
+sudoku.solve()
+assert(sudoku.is_correct())
+assert(sudoku.is_complete())
+''',
+            repeat=10, number=1,
+            globals={'io': io, 'raw_values': raw_values}))
 
     def test_fail_to_complete_impossible_sudoku(self):
         # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/impossible.sud
