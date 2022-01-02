@@ -1,4 +1,3 @@
-import collections
 import string
 import timeit
 import unittest
@@ -7,11 +6,7 @@ from functools import reduce
 from operator import and_
 from statistics import mean, stdev
 
-from typing import List, Optional, Any
-
 SIZE: int = 9
-
-consume = collections.deque(maxlen=0).extend
 
 
 class Sudoku:
@@ -170,9 +165,6 @@ class Sudoku:
             result.append(this_value)
         return result
 
-    def __set_occupied(self, row, column, value_0):
-        self._is_empty[value_0][row][column] = False
-
     def _compute_candidate(self):
         self._is_empty = self._empty_candidates()
         for row_value in range(0, SIZE):
@@ -181,9 +173,12 @@ class Sudoku:
                 if value_ is None:
                     continue
                 value_0 = value_ - 1
-                consume(self.__set_occupied(row_value, column_value, value_0) for value_0 in range(0, SIZE))
-                consume(self.__set_occupied(row_value, column_value, value_0) for row_value in range(0, SIZE))
-                consume(self.__set_occupied(row_value, column_value, value_0) for column_value in range(0, SIZE))
+                for i in range(0, SIZE):
+                    self._is_empty[value_0][i][column_value] = False
+                for i in range(0, SIZE):
+                    self._is_empty[value_0][row_value][i] = False
+                for i in range(0, SIZE):
+                    self._is_empty[i][row_value][column_value] = False
                 self.__set_occupied_square(row_value, column_value, value_0)
 
     def __set_occupied_square(self, row_value: int, column_value: int, value_0: int):
@@ -191,7 +186,7 @@ class Sudoku:
         square_column_begin = column_value - column_value % 3
         for row_value in range(square_row_begin, square_row_begin + 2 + 1):
             for column_value in range(square_column_begin, square_column_begin + 2 + 1):
-                self.__set_occupied(row_value, column_value, value_0)
+                self._is_empty[value_0][row_value][column_value] = False
 
     def print_values(self, message: string, function=logger.info):
         function(f"{message}: is correct? {self.is_correct().__str__()}")
@@ -549,6 +544,7 @@ assert(sudoku.is_complete())
 ''',
             repeat=10, number=1,
             globals={'io': io, 'raw_values': raw_values})
+        print(f"best_previous_results = {current_results}")
 
         best_previous_results = [9.208840806, 9.067032584000001, 9.259895670999999, 9.746067323999998,
                                  10.604200458999998, 9.305016815000002, 11.068259142000002, 10.613449321000004,
