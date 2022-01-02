@@ -108,7 +108,7 @@ class Sudoku:
 
     def _deduce_candidates(self):
         assert (self.is_correct())
-        while self._occupied_cells() != SIZE * SIZE:
+        while True:
             filled_this_iteration: bool = False
             for value_candidate in range(0, SIZE):
                 for row in range(0, SIZE):
