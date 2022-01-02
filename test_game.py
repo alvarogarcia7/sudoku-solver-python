@@ -97,7 +97,7 @@ class Sudoku:
         for choice in self._choices():
             aux = self._copy()
             self.value[choice['position'][0]][choice['position'][1]] = choice['value']
-            self._compute_candidate()
+            self._compute_candidate_partial(choice['position'][0], choice['position'][1], choice['value'] - 1)
             self._deduce_candidates()
             if self.solve_r():
                 return True
@@ -132,11 +132,11 @@ class Sudoku:
                    by_square_positions))
         if len(by_row) == 1 and len(by_column) == 1 and len(by_square) == 1:
             self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
-            self._compute_candidate()
+            self._compute_candidate_partial(by_square[0][0], by_square[0][1], value_candidate)
             filled_this_iteration = True
         if len(by_square) == 1:
             self.value[by_square[0][0]][by_square[0][1]] = value_candidate + 1
-            self._compute_candidate()
+            self._compute_candidate_partial(by_square[0][0], by_square[0][1], value_candidate)
             filled_this_iteration = True
         return filled_this_iteration
 
@@ -271,6 +271,13 @@ class Sudoku:
                     self._is_empty[value_0][row_value][i] = False
                     self._is_empty[i][row_value][column_value] = False
                 self.__set_occupied_square(row_value, column_value, value_0)
+
+    def _compute_candidate_partial(self, row, column, value_0):
+        for i in range(0, SIZE):
+            self._is_empty[value_0][i][column] = False
+            self._is_empty[value_0][row][i] = False
+            self._is_empty[i][row][column] = False
+        self.__set_occupied_square(row, column, value_0)
 
     def __set_occupied_square(self, row_value: int, column_value: int, value_0: int):
         for [row_value, column_value] in self.cells_for_square_at(row_value, column_value):
