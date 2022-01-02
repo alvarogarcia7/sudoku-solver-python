@@ -546,14 +546,15 @@ assert(sudoku.is_complete())
             globals={'io': io, 'raw_values': raw_values})
         print(f"best_previous_results = {current_results}")
 
-        best_previous_results = [9.208840806, 9.067032584000001, 9.259895670999999, 9.746067323999998,
-                                 10.604200458999998, 9.305016815000002, 11.068259142000002, 10.613449321000004,
-                                 12.171239708999991, 10.321849379]
+        best_previous_results = [6.451339481000001, 6.073884725, 5.980104863999999, 6.045415211000002,
+                                 6.004259040000001, 5.7870871579999985, 5.881087719, 6.030691902000001,
+                                 5.960954622999999, 6.1148847929999945]
         lower_end = mean(best_previous_results) - 3 * stdev(best_previous_results)
 
         difference_in_percentage = (1 - mean(current_results) / mean(best_previous_results)) * 100
         is_positive: bool = difference_in_percentage > 0
-        print(f"This optimisation {'improves' if is_positive else 'is worse'} by {abs(round(difference_in_percentage, None))}%")
+        print(
+            f"This optimisation {'improves' if is_positive else 'is worse'} by {abs(round(difference_in_percentage, None))}%")
 
         self.assertTrue(mean(current_results) < lower_end, msg="This optimisation is not statistically significant")
 
