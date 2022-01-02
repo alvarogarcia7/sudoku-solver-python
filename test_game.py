@@ -37,6 +37,7 @@ class Sudoku:
         return all([len(list(filter(lambda cell: cell is not None, row))) == 9 for row in self.value])
 
     @staticmethod
+    @functools.cache
     def _square_for(row, column):
         x = row // 3
         y = column // 3
