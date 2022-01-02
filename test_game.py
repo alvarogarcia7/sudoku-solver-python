@@ -5,6 +5,7 @@ import unittest
 from logzero import logger
 from functools import reduce
 from operator import and_
+from statistics import mean, stdev
 
 from typing import List, Optional, Any
 
@@ -539,7 +540,7 @@ class TestIOTest(unittest.TestCase):
             "34.2....."
         ]
         io = IO()
-        print(timeit.repeat(
+        current_results = timeit.repeat(
             setup='''sudoku = io.load(raw_values)''',
             stmt='''
 sudoku.solve()
@@ -547,7 +548,18 @@ assert(sudoku.is_correct())
 assert(sudoku.is_complete())
 ''',
             repeat=10, number=1,
-            globals={'io': io, 'raw_values': raw_values}))
+            globals={'io': io, 'raw_values': raw_values})
+
+        best_previous_results = [9.208840806, 9.067032584000001, 9.259895670999999, 9.746067323999998,
+                                 10.604200458999998, 9.305016815000002, 11.068259142000002, 10.613449321000004,
+                                 12.171239708999991, 10.321849379]
+        lower_end = mean(best_previous_results) - 3 * stdev(best_previous_results)
+
+        difference_in_percentage = (1 - mean(current_results) / mean(best_previous_results)) * 100
+        is_positive: bool = difference_in_percentage > 0
+        print(f"This optimisation {'improves' if is_positive else 'is worse'} by {abs(round(difference_in_percentage, None))}%")
+
+        self.assertTrue(mean(current_results) < lower_end, msg="This optimisation is not statistically significant")
 
     def test_fail_to_complete_impossible_sudoku(self):
         # Source: https://github.com/jimburton/sudoku/blob/master/puzzles/impossible.sud
