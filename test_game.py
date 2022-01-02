@@ -640,9 +640,9 @@ assert(sudoku.is_complete())
             globals={'io': io, 'raw_values': raw_values})
         print(f"best_previous_results = {current_results}")
 
-        best_previous_results = [2.7129376410000003, 3.121830279, 2.676298759, 2.706423612, 2.526655052999999,
-                                 2.5565128, 2.7968125169999993, 2.7978511630000007, 2.5304349759999987,
-                                 2.932820578000001]
+        best_previous_results = [2.9450932529999996, 2.649997738999999, 2.496416741999999, 2.4864603620000008,
+                                 2.5096614400000004, 2.6606350360000004, 2.499147489000002, 2.4948775790000006,
+                                 2.496798113999997, 2.5132042020000007]
         lower_end = mean(best_previous_results) - 3 * stdev(best_previous_results)
 
         difference_in_percentage = (1 - mean(current_results) / mean(best_previous_results)) * 100
