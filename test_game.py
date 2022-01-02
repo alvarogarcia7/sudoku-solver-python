@@ -268,9 +268,7 @@ class Sudoku:
                 value_0 = value_ - 1
                 for i in range(0, SIZE):
                     self._is_empty[value_0][i][column_value] = False
-                for i in range(0, SIZE):
                     self._is_empty[value_0][row_value][i] = False
-                for i in range(0, SIZE):
                     self._is_empty[i][row_value][column_value] = False
                 self.__set_occupied_square(row_value, column_value, value_0)
 
