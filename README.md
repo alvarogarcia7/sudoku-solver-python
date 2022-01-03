@@ -1,5 +1,20 @@
 # Sudoku Solver
 
+This is an étude to practice backtracking, algorithms.
+
+Goal: solve a sudoku given its initial state.
+
+See also a similar étude in C.
+
+Iterations:
+
+1. Solver using 'deducing' numbers. This strategy does not allow for ambiguity / nondeterminism. Non-ambiguous sudokus can be solved with a greedy algorithm.
+2. Solver using 'backtracking' to try alternatives when there is ambiguity. Naive implementation, disregarding performance
+3. Optimise performance for the backtracking iteration.
+4. [Pending] Use Knuth's Dancing Links X (DLX) as an alternative to backtracking.
+5. [Pending] Compare 'DLX' and 'backtracking' alternatives
+6. [Pending] Find better heuristics for all alternatives (improving the runtime due to a better algorithm)
+
 
 ### Results
 
