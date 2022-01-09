@@ -7,6 +7,10 @@ from functools import reduce
 from operator import and_
 from statistics import mean, stdev
 
+from typing import List, Optional, Any
+
+from exact_cover import solve_sudoku
+
 SIZE: int = 9
 
 
@@ -77,17 +81,25 @@ class Sudoku:
         return True
 
     def solve(self):
-        if not self.is_correct():
-            return
-        self._compute_candidate()
-        self._deduce_candidates()
-        if self._occupied_cells() == SIZE * SIZE:
-            return
-
-        # logger.debug(f"After deducing: {self._occupied_cells()} elements")
-        # self.print_values("Before start backtracking")
-
-        self.solve_r()
+        try:
+            for solution in solve_sudoku((3,3), self.value):
+                self.value = solution
+                break
+        except:
+            pass #no solutions
+        # if not self.is_correct():
+        #     return
+        # self._compute_candidate()
+        # self._deduce_candidates()
+        # if self._occupied_cells() == SIZE * SIZE:
+        #     return
+        #
+        # # logger.debug(f"After deducing: {self._occupied_cells()} elements")
+        # self._compute_candidate()
+        # self._deduce_candidates()
+        # # self.print_values("Before start backtracking")
+        #
+        # self.solve_r()
 
         # self.print_values("After backtracking")
 
@@ -648,8 +660,8 @@ assert(sudoku.is_complete())
 
         difference_in_percentage = (1 - mean(current_results) / mean(best_previous_results)) * 100
         is_positive: bool = difference_in_percentage > 0
-        print(
-            f"This optimisation {'improves' if is_positive else 'is worse'} by {abs(round(difference_in_percentage, None))}%")
+        print(f"This optimisation {'improves' if is_positive else 'is worse'} by {abs(round(difference_in_percentage, None))}%")
+        print(f"best_previous_results = {current_results}")
 
         self.assertTrue(mean(current_results) < lower_end, msg="This optimisation is not statistically significant")
 
