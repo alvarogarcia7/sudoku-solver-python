@@ -15,10 +15,12 @@ class ExactCover:
         # https://stackoverflow.com/questions/35429478/testing-and-assertion-in-list-comprehension
         assert reduce(and_, [len(row) == len(value[0]) for row in value])
 
+        self.range = range(1, 2 + 1)
+
         self.value = value
 
     def _constraint_matrix(self) -> dict[str, set[str]]:
-        constraint_numbers = [[value, i, j] for value in range(1, 3) for i in range(1, 3) for j in range(1, 3)]
+        constraint_numbers = [[value, i, j] for value in self.range for i in self.range for j in self.range]
 
         constraints = {'some_in_column_and_row': set(),
                        'number_in_row': set(),
@@ -35,9 +37,18 @@ class ExactCover:
         return f"{value}_({position[0]},{position[1]})"
 
     def _choice_matrix(self):
-        return [
-            [[1, [1, 1]], [True, False, False, False], [True, False, False, False], [True, False, False, False]]
-        ]
+        constraint_numbers = [[value, i, j] for i in self.range for j in self.range for value in self.range]
+
+        result = []
+        for row in constraint_numbers:
+            value = row[0]
+            col_index = row[1]
+            row_index = row[2]
+            some_number_x_in_row_y = [(row_index == i and col_index == j) for i in self.range for j in self.range]
+            the_number_x_in_row_y = [(value == value_ and row_index == i) for value_ in self.range for i in self.range]
+            the_number_x_in_col_y = [(value == value_ and col_index == i) for value_ in self.range for i in self.range]
+            result.append([[value, [col_index, row_index]], some_number_x_in_row_y, the_number_x_in_row_y, the_number_x_in_col_y])
+        return result
 
     @staticmethod
     def _s(x):
