@@ -2,15 +2,20 @@ import copy
 import unittest
 from functools import reduce
 from operator import and_
-from typing import Dict, Union, Set, Any, List
+from typing import Dict, Union, Set, Any, List, TypedDict, Optional
 
 from test_game import IO
 
 SIZE: int = 9
 
+Constraints = TypedDict('Constraints', {'some_in_column_and_row': Set[str],
+                                        'number_in_row': Set[str],
+                                        'number_in_column': List[str]})
+ChoiceRow = TypedDict('ChoiceRow', {'choice': int, 'position': List[int], 'constraints': List[List[bool]]})
+
 
 class ExactCover:
-    def __init__(self, value):
+    def __init__(self, value: List[List[Optional[int]]]):
         # assert square matrix
         assert len(value) == len(value[0])
         # https://stackoverflow.com/questions/35429478/testing-and-assertion-in-list-comprehension
@@ -23,12 +28,12 @@ class ExactCover:
 
         self.value = value
 
-    def _constraint_matrix(self) -> dict[str, set[str]]:
+    def _constraint_matrix(self) -> Constraints:
         constraint_numbers = [[value, i, j] for value in self.range for i in self.range for j in self.range]
 
-        constraints: dict[str, Union[set[Any], list[Any]]] = {'some_in_column_and_row': set(),
-                                                              'number_in_row': set(),
-                                                              'number_in_column': []}
+        constraints: Constraints = {'some_in_column_and_row': set(),
+                                    'number_in_row': set(),
+                                    'number_in_column': []}
         for i in constraint_numbers:
             constraints['number_in_row'].add(f"{i[0]}_{i[1]}")
             constraints['some_in_column_and_row'].add(self.value_at(i[0], [i[1], i[2]]))
@@ -40,10 +45,10 @@ class ExactCover:
     def value_at(value: int, position: list[int]) -> str:
         return f"{value}_({position[0]},{position[1]})"
 
-    def _choice_matrix(self):
+    def _choice_matrix(self) -> list[ChoiceRow]:
         constraint_numbers = [[value, i, j] for i in self.range for j in self.range for value in self.range]
 
-        result = []
+        result: list[ChoiceRow] = []
         for row in constraint_numbers:
             value = row[0]
             col_index = row[1]
@@ -51,12 +56,13 @@ class ExactCover:
             some_number_x_in_row_y = [(row_index == i and col_index == j) for i in self.range for j in self.range]
             the_number_x_in_row_y = [(value == value_ and row_index == i) for value_ in self.range for i in self.range]
             the_number_x_in_col_y = [(value == value_ and col_index == i) for value_ in self.range for i in self.range]
-            result.append(
-                [[value, [col_index, row_index]], some_number_x_in_row_y, the_number_x_in_row_y, the_number_x_in_col_y])
+            result.append({'choice': value,
+                           'position': [col_index, row_index],
+                           'constraints': [some_number_x_in_row_y, the_number_x_in_row_y, the_number_x_in_col_y]})
         return result
 
     @staticmethod
-    def _s(x):
+    def _s(x: bool) -> str:
         if x:
             return 'X'
         return ""
@@ -67,7 +73,7 @@ class ExactCover:
     def print_solution_matrix(self) -> None:
         self._print_matrix(self.solution_matrix)
 
-    def _print_matrix(self, matrix) -> None:
+    def _print_matrix(self, matrix: List[ChoiceRow]) -> None:
         print('{:8s} | {:10s} | {:11s} | {:11s}'.format('choice', 'some number', 'the number', 'the number'))
         print('{:8s} | {:5d} {:5d} | {:5d} {:5d} | {:4d} {:4d}'.format('', 1, 2, 1, 2, 1, 2))
         print('{:8s} | {:11s} | {:10s} | {:10s}'.format('', 'and row', 'must in row', 'must in col'))
@@ -81,26 +87,25 @@ class ExactCover:
                                                1, 2, 1, 2))
 
         for row in matrix:
-            print('{:d} @ ({:d},{:d})|'.format(row[0][0], row[0][1][0], row[0][1][1]), end="")
-            for j in range(1, len(row)):
-                for i in row[j]:
+            print('{:d} @ ({:d},{:d})|'.format(row['choice'], row['position'][0], row['position'][1]), end="")
+            for j in row['constraints']:
+                for i in j:
                     print('  {:1s}'.format(ExactCover._s(i)), end="")
                 print(" |", end="")
             print()
 
         pass
 
-    def rows_left_after_removing__column(self, column_number: int, choice_matrix):
+    def rows_left_after_removing__column(self, column_number: int) -> None:
         i, j = self.constraint_column_to_xy(column_number)
-        return list(filter(lambda x: not x[i][j], choice_matrix))
+        self.choice_matrix = list(filter(lambda x: not x['constraints'][i][j], self.choice_matrix))
 
-    def constraint_column_to_xy(self, column_number):
-        non_constraint_prefix_columns = 1
-        i = column_number // len(self.range) + non_constraint_prefix_columns
+    def constraint_column_to_xy(self, column_number: int) -> tuple[int, int]:
+        i = column_number // len(self.range)
         j = column_number % len(self.range)
         return i, j
 
-    def _empty_matrix(self):
+    def _empty_matrix(self) -> List[Any]:
         return []
 
     def heuristic(self) -> int:
@@ -121,19 +126,19 @@ class ExactCover:
                 return constraint
         raise ValueError("Could not find empty column")
 
-    def select_row(self, chosen_column: int):
+    def select_row(self, chosen_column: int) -> ChoiceRow:
         i, j = self.constraint_column_to_xy(chosen_column)
-        return list(filter(lambda x: x[i][j], self.choice_matrix))[0]
+        return list(filter(lambda x: x['constraints'][i][j], self.choice_matrix))[0]
 
-    def add_to_solution(self, chosen_row: list) -> None:
-        self.solution_matrix =  self.solution_matrix + [chosen_row]
+    def add_to_solution(self, chosen_row: ChoiceRow) -> None:
+        self.solution_matrix = self.solution_matrix + [chosen_row]
 
-    def remove_from_choice(self, chosen_column: list):
+    def remove_from_choice(self, chosen_column: ChoiceRow) -> None:
         self.choice_matrix = list(filter(lambda row: not row == chosen_column, self.choice_matrix))
 
 
 class TestIOTest(unittest.TestCase):
-    def test_generate_latin_square_2x2(self):
+    def test_generate_latin_square_2x2(self) -> None:
         raw_values = [
             "  ",
             "  "
