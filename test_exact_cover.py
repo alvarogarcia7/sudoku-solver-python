@@ -2,7 +2,7 @@ import copy
 import unittest
 from functools import reduce
 from operator import and_
-from typing import Dict, Union, Set, Any, List, TypedDict, Optional
+from typing import Dict, Union, Set, Any, List, TypedDict, Optional, Sized
 
 from test_game import IO
 
@@ -11,7 +11,11 @@ SIZE: int = 9
 Constraints = TypedDict('Constraints', {'some_in_column_and_row': Set[str],
                                         'number_in_row': Set[str],
                                         'number_in_column': List[str]})
-ChoiceRow = TypedDict('ChoiceRow', {'choice': int, 'position': List[int], 'constraints': List[List[bool]]})
+ChoiceRow = TypedDict('ChoiceRow',
+                      {'choice': int,
+                       'position': List[int],
+                       'constraints': List[List[bool]],
+                       'deleted': bool})
 
 
 class ExactCover:
@@ -58,7 +62,9 @@ class ExactCover:
             the_number_x_in_col_y = [(value == value_ and col_index == i) for value_ in self.range for i in self.range]
             result.append({'choice': value,
                            'position': [col_index, row_index],
-                           'constraints': [some_number_x_in_row_y, the_number_x_in_row_y, the_number_x_in_col_y]})
+                           'constraints': [some_number_x_in_row_y, the_number_x_in_row_y, the_number_x_in_col_y],
+                           'deleted': False
+                           })
         return result
 
     @staticmethod
@@ -112,13 +118,12 @@ class ExactCover:
         if not self.solution_matrix:
             return 0
         total = copy.deepcopy(self.solution_matrix[0])
-        total[0] = [-1, [0, 0]]
-        for row_index in range(len(self.solution_matrix)):
-            for column_index in range(1, len(self.solution_matrix[row_index])):
+        total['choice'] = -1
+        total['position'] = [0, 0]
+        for row_index in self.solution_matrix:
+            for column_index in range(1, len(row_index)):
                 x, y = self.constraint_column_to_xy(column_index)
-                print(total)
-                print(x, y)
-                total[x][y] = total[x][y] or self.solution_matrix[row_index][x][y]
+                total['constraints'][x][y] = total['constraints'][x][y] or self.solution_matrix[row_index][x][y]
 
         for constraint in range(0, 12 + 1):
             i, j = self.constraint_column_to_xy(constraint)
@@ -131,10 +136,30 @@ class ExactCover:
         return list(filter(lambda x: x['constraints'][i][j], self.choice_matrix))[0]
 
     def add_to_solution(self, chosen_row: ChoiceRow) -> None:
-        self.solution_matrix = self.solution_matrix + [chosen_row]
+        chosen_row_copy = copy.deepcopy(chosen_row)
+        chosen_row_copy['deleted'] = False
+        self.solution_matrix = self.solution_matrix + [chosen_row_copy]
 
     def remove_from_choice(self, chosen_row: ChoiceRow) -> None:
-        self.choice_matrix = list(filter(lambda row: not row == chosen_row, self.choice_matrix))
+        for row in self.choice_matrix:
+            if row == chosen_row:
+                row['deleted'] = True
+
+            #
+            # for constraint_group in chosen_row['constraints']:
+            #     for constraint in constraint_group:
+            #         if constraint:
+            #             row['de']
+
+    def _not_deleted(self, values: List[ChoiceRow]) -> List[ChoiceRow]:
+        return list(filter(lambda x: not x['deleted'], values))
+
+    def choice_matrix_length(self) -> int:
+        return len(self._not_deleted(self.choice_matrix))
+
+    def solution_matrix_length(self) -> int:
+        return len(self._not_deleted(self.solution_matrix))
+
 
 
 class TestIOTest(unittest.TestCase):
@@ -166,7 +191,7 @@ class TestIOTest(unittest.TestCase):
         ]
         exact_cover = ExactCover(IO().load_generic(raw_values))
 
-        choice_matrix_rows = len(exact_cover.choice_matrix) + len(exact_cover.solution_matrix)
+        choice_matrix_rows = exact_cover.choice_matrix_length() + exact_cover.solution_matrix_length()
 
         chosen_column = exact_cover.heuristic()
         chosen_row = exact_cover.select_row(chosen_column)
@@ -174,9 +199,9 @@ class TestIOTest(unittest.TestCase):
         exact_cover.remove_from_choice(chosen_row)
 
         exact_cover.print_choice_matrix()
-
         exact_cover.print_solution_matrix()
-        self.assertEqual(choice_matrix_rows, len(exact_cover.choice_matrix) + len(exact_cover.solution_matrix))
+
+        self.assertEqual(choice_matrix_rows, exact_cover.choice_matrix_length() + exact_cover.solution_matrix_length())
 
 
 if __name__ == '__main__':
