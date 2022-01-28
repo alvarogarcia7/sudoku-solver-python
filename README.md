@@ -46,3 +46,14 @@ Python 3.9.5 (default, May  4 2021, 03:33:11)
 ```
 
 This optimisation improves by 62% the previous result.
+
+## Links
+
+https://www.cs.mcgill.ca/~aassaf9/python/sudoku.txt
+https://www.cs.mcgill.ca/~aassaf9/python/algorithm_x.html
+https://kybernetikos.com/2012/06/03/dancing-links-understanding-how-the-algorithm-works/
+http://dancing-links.herokuapp.com/
+https://garethrees.org/2007/06/10/zendoku-generation/#section-4
+https://stackoverflow.com/questions/1518335/the-dancing-links-algorithm-an-explanation-that-is-less-explanatory-but-more-o
+
+https://www.javatpoint.com/n-queens-problems
