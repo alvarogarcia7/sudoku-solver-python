@@ -336,9 +336,12 @@ class Sudoku:
 
 class IO:
     def load(self, raw_values):
+        return Sudoku(self.load_generic(raw_values))
+
+    def load_generic(self, raw_values):
         x: list[list[int]] = [list(map(lambda x: int(x) if x != ' ' and x != '.' else None, raw_value)) for raw_value in
                               raw_values]
-        return Sudoku(x)
+        return x
 
     def serialize(self, sudoku: Sudoku):
         x: list[str] = ["".join(map(lambda x: x.__str__() if x is not None else ' ', raw_value)) for raw_value in
