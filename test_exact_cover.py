@@ -105,7 +105,7 @@ class ExactCover:
         j = column_number % len(self.range)
         return i, j
 
-    def _empty_matrix(self) -> List[Any]:
+    def _empty_matrix(self) -> List[ChoiceRow]:
         return []
 
     def heuristic(self) -> int:
@@ -133,8 +133,8 @@ class ExactCover:
     def add_to_solution(self, chosen_row: ChoiceRow) -> None:
         self.solution_matrix = self.solution_matrix + [chosen_row]
 
-    def remove_from_choice(self, chosen_column: ChoiceRow) -> None:
-        self.choice_matrix = list(filter(lambda row: not row == chosen_column, self.choice_matrix))
+    def remove_from_choice(self, chosen_row: ChoiceRow) -> None:
+        self.choice_matrix = list(filter(lambda row: not row == chosen_row, self.choice_matrix))
 
 
 class TestIOTest(unittest.TestCase):
