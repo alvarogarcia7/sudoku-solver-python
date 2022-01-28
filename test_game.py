@@ -2,6 +2,8 @@ import functools
 import string
 import timeit
 import unittest
+from typing import List
+
 from logzero import logger
 from functools import reduce
 from operator import and_

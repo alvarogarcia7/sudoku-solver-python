@@ -3,7 +3,7 @@ test-unit: virtual_setup
 .PHONY: test-unit
 
 typecheck:
-	echo "mypy still not configured"
+	mypy . --exclude venv --strict --warn-unreachable --warn-return-any --disallow-untyped-calls
 .PHONY: typecheck
 
 requirements: virtual_setup

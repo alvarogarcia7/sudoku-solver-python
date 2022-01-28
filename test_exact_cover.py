@@ -1,7 +1,7 @@
+import copy
 import unittest
 from functools import reduce
 from operator import and_
-from typing import List, Any
 
 from test_game import IO
 
@@ -47,7 +47,8 @@ class ExactCover:
             some_number_x_in_row_y = [(row_index == i and col_index == j) for i in self.range for j in self.range]
             the_number_x_in_row_y = [(value == value_ and row_index == i) for value_ in self.range for i in self.range]
             the_number_x_in_col_y = [(value == value_ and col_index == i) for value_ in self.range for i in self.range]
-            result.append([[value, [col_index, row_index]], some_number_x_in_row_y, the_number_x_in_row_y, the_number_x_in_col_y])
+            result.append(
+                [[value, [col_index, row_index]], some_number_x_in_row_y, the_number_x_in_row_y, the_number_x_in_col_y])
         return result
 
     @staticmethod
@@ -56,8 +57,7 @@ class ExactCover:
             return 'X'
         return ""
 
-    @classmethod
-    def print_choice_matrix(cls, choice_matrix):
+    def print_choice_matrix(self, choice_matrix):
         print('{:8s} | {:10s} | {:11s} | {:11s}'.format('choice', 'some number', 'the number', 'the number'))
         print('{:8s} | {:5d} {:5d} | {:5d} {:5d} | {:4d} {:4d}'.format('', 1, 2, 1, 2, 1, 2))
         print('{:8s} | {:11s} | {:10s} | {:10s}'.format('', 'and row', 'must in row', 'must in col'))
@@ -69,13 +69,54 @@ class ExactCover:
 
         for row in choice_matrix:
             print('{:d} @ ({:d},{:d})|'.format(row[0][0], row[0][1][0], row[0][1][1]), end="")
-            for j in range(1, 4):
+            for j in range(1, len(row)):
                 for i in row[j]:
                     print('  {:1s}'.format(ExactCover._s(i)), end="")
                 print(" |", end="")
             print()
 
         pass
+
+    def rows_left_after_removing__column(self, column_number: int, choice_matrix):
+        i, j = self.constraint_column_to_xy(column_number)
+        return list(filter(lambda x: not x[i][j], choice_matrix))
+
+    def constraint_column_to_xy(self, column_number):
+        non_constraint_prefix_columns = 1
+        i = column_number // len(self.range) + non_constraint_prefix_columns
+        j = column_number % len(self.range)
+        return i, j
+
+    def _empty_matrix(self):
+        return []
+
+    def heuristic(self, solution_matrix: list, choice_matrix: list):
+        if not solution_matrix:
+            return 0
+        total = copy.deepcopy(solution_matrix[0])
+        total[0] = [-1, [0, 0]]
+        for row_index in range(len(solution_matrix)):
+            for column_index in range(1, len(solution_matrix[row_index])):
+                x, y = self.constraint_column_to_xy(column_index)
+                print(total)
+                print(x, y)
+                total[x][y] = total[x][y] or solution_matrix[row_index][x][y]
+
+        for constraint in range(0, 12 + 1):
+            i, j = self.constraint_column_to_xy(constraint)
+            if not total[i][j]:
+                return constraint
+        raise ValueError("Could not find empty column")
+
+    def select_row(self, chosen_column: int, choice_matrix: list):
+        i, j = self.constraint_column_to_xy(chosen_column)
+        return list(filter(lambda x: x[i][j], choice_matrix))[0]
+
+    def add_to_solution(self, solution_matrix: list, chosen_row: list):
+        return solution_matrix + [chosen_row]
+
+    def remove_from_choice(self, chosen_column: list, choice_matrix: list):
+        return list(filter(lambda row: not row == chosen_column, choice_matrix))
 
 
 class TestIOTest(unittest.TestCase):
@@ -100,14 +141,25 @@ class TestIOTest(unittest.TestCase):
         self.assertEqual(4, len(constraint_matrix['number_in_row']))
         self.assertEqual(8, len(constraint_matrix['number_in_column']))
 
-    def test_generate_latin_square_2x2_2(self):
+    def test_generate_latin_square_2x2_2(self) -> None:
         raw_values = [
             "  ",
             "  "
         ]
-        choice_matrix = ExactCover(IO().load_generic(raw_values))._choice_matrix()
+        exact_cover = ExactCover(IO().load_generic(raw_values))
+        choice_matrix = exact_cover._choice_matrix()
+        choice_matrix_rows = len(choice_matrix)
+        solution_matrix = exact_cover._empty_matrix()
 
-        ExactCover.print_choice_matrix(choice_matrix)
+        chosen_column = exact_cover.heuristic(solution_matrix, choice_matrix)
+        chosen_row = exact_cover.select_row(chosen_column, choice_matrix)
+        solution_matrix = exact_cover.add_to_solution(solution_matrix, chosen_row)
+        choice_matrix = exact_cover.remove_from_choice(chosen_row, choice_matrix)
+
+        exact_cover.print_choice_matrix(choice_matrix)
+
+        exact_cover.print_choice_matrix(solution_matrix)
+        self.assertEqual(choice_matrix_rows, len(choice_matrix) + len(solution_matrix))
 
 
 if __name__ == '__main__':
