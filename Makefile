@@ -10,7 +10,7 @@ requirements: virtual_setup
 	pip3 install -r requirements.txt
 .PHONY: requirements
 
-test: typecheck test-unit
+test: test-unit # typecheck
 .PHONY: test
 
 virtual_setup:

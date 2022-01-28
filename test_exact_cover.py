@@ -2,6 +2,7 @@ import copy
 import unittest
 from functools import reduce
 from operator import and_
+from typing import Dict, Union, Set, Any, List
 
 from test_game import IO
 
@@ -17,14 +18,17 @@ class ExactCover:
 
         self.range = range(1, 2 + 1)
 
+        self.choice_matrix = self._choice_matrix()
+        self.solution_matrix = self._empty_matrix()
+
         self.value = value
 
     def _constraint_matrix(self) -> dict[str, set[str]]:
         constraint_numbers = [[value, i, j] for value in self.range for i in self.range for j in self.range]
 
-        constraints = {'some_in_column_and_row': set(),
-                       'number_in_row': set(),
-                       'number_in_column': []}
+        constraints: dict[str, Union[set[Any], list[Any]]] = {'some_in_column_and_row': set(),
+                                                              'number_in_row': set(),
+                                                              'number_in_column': []}
         for i in constraint_numbers:
             constraints['number_in_row'].add(f"{i[0]}_{i[1]}")
             constraints['some_in_column_and_row'].add(self.value_at(i[0], [i[1], i[2]]))
@@ -57,17 +61,26 @@ class ExactCover:
             return 'X'
         return ""
 
-    def print_choice_matrix(self, choice_matrix):
+    def print_choice_matrix(self) -> None:
+        self._print_matrix(self.choice_matrix)
+
+    def print_solution_matrix(self) -> None:
+        self._print_matrix(self.solution_matrix)
+
+    def _print_matrix(self, matrix) -> None:
         print('{:8s} | {:10s} | {:11s} | {:11s}'.format('choice', 'some number', 'the number', 'the number'))
         print('{:8s} | {:5d} {:5d} | {:5d} {:5d} | {:4d} {:4d}'.format('', 1, 2, 1, 2, 1, 2))
         print('{:8s} | {:11s} | {:10s} | {:10s}'.format('', 'and row', 'must in row', 'must in col'))
         print(
-            '{:8s} | {:2d} {:2d} {:2d} {:2d} | {:2d} {:2d} {:2d} {:2d} | {:2d} {:2d} {:2d} {:2d}'.format('', 1, 2, 1, 2,
-                                                                                                         1,
-                                                                                                         2, 1, 2,
-                                                                                                         1, 2, 1, 2))
+            '{:8s} '
+            '| {:2d} {:2d} {:2d} {:2d} '
+            '| {:2d} {:2d} {:2d} {:2d} '
+            '| {:2d} {:2d} {:2d} {:2d}'.format('',
+                                               1, 2, 1, 2,
+                                               1, 2, 1, 2,
+                                               1, 2, 1, 2))
 
-        for row in choice_matrix:
+        for row in matrix:
             print('{:d} @ ({:d},{:d})|'.format(row[0][0], row[0][1][0], row[0][1][1]), end="")
             for j in range(1, len(row)):
                 for i in row[j]:
@@ -90,17 +103,17 @@ class ExactCover:
     def _empty_matrix(self):
         return []
 
-    def heuristic(self, solution_matrix: list, choice_matrix: list):
-        if not solution_matrix:
+    def heuristic(self) -> int:
+        if not self.solution_matrix:
             return 0
-        total = copy.deepcopy(solution_matrix[0])
+        total = copy.deepcopy(self.solution_matrix[0])
         total[0] = [-1, [0, 0]]
-        for row_index in range(len(solution_matrix)):
-            for column_index in range(1, len(solution_matrix[row_index])):
+        for row_index in range(len(self.solution_matrix)):
+            for column_index in range(1, len(self.solution_matrix[row_index])):
                 x, y = self.constraint_column_to_xy(column_index)
                 print(total)
                 print(x, y)
-                total[x][y] = total[x][y] or solution_matrix[row_index][x][y]
+                total[x][y] = total[x][y] or self.solution_matrix[row_index][x][y]
 
         for constraint in range(0, 12 + 1):
             i, j = self.constraint_column_to_xy(constraint)
@@ -108,15 +121,15 @@ class ExactCover:
                 return constraint
         raise ValueError("Could not find empty column")
 
-    def select_row(self, chosen_column: int, choice_matrix: list):
+    def select_row(self, chosen_column: int):
         i, j = self.constraint_column_to_xy(chosen_column)
-        return list(filter(lambda x: x[i][j], choice_matrix))[0]
+        return list(filter(lambda x: x[i][j], self.choice_matrix))[0]
 
-    def add_to_solution(self, solution_matrix: list, chosen_row: list):
-        return solution_matrix + [chosen_row]
+    def add_to_solution(self, chosen_row: list) -> None:
+        self.solution_matrix =  self.solution_matrix + [chosen_row]
 
-    def remove_from_choice(self, chosen_column: list, choice_matrix: list):
-        return list(filter(lambda row: not row == chosen_column, choice_matrix))
+    def remove_from_choice(self, chosen_column: list):
+        self.choice_matrix = list(filter(lambda row: not row == chosen_column, self.choice_matrix))
 
 
 class TestIOTest(unittest.TestCase):
@@ -147,19 +160,18 @@ class TestIOTest(unittest.TestCase):
             "  "
         ]
         exact_cover = ExactCover(IO().load_generic(raw_values))
-        choice_matrix = exact_cover._choice_matrix()
-        choice_matrix_rows = len(choice_matrix)
-        solution_matrix = exact_cover._empty_matrix()
 
-        chosen_column = exact_cover.heuristic(solution_matrix, choice_matrix)
-        chosen_row = exact_cover.select_row(chosen_column, choice_matrix)
-        solution_matrix = exact_cover.add_to_solution(solution_matrix, chosen_row)
-        choice_matrix = exact_cover.remove_from_choice(chosen_row, choice_matrix)
+        choice_matrix_rows = len(exact_cover.choice_matrix) + len(exact_cover.solution_matrix)
 
-        exact_cover.print_choice_matrix(choice_matrix)
+        chosen_column = exact_cover.heuristic()
+        chosen_row = exact_cover.select_row(chosen_column)
+        exact_cover.add_to_solution(chosen_row)
+        exact_cover.remove_from_choice(chosen_row)
 
-        exact_cover.print_choice_matrix(solution_matrix)
-        self.assertEqual(choice_matrix_rows, len(choice_matrix) + len(solution_matrix))
+        exact_cover.print_choice_matrix()
+
+        exact_cover.print_solution_matrix()
+        self.assertEqual(choice_matrix_rows, len(exact_cover.choice_matrix) + len(exact_cover.solution_matrix))
 
 
 if __name__ == '__main__':

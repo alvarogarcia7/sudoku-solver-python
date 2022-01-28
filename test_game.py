@@ -4,7 +4,7 @@ import timeit
 import unittest
 from typing import List
 
-from logzero import logger
+from logzero import logger # type: ignore
 from functools import reduce
 from operator import and_
 from statistics import mean, stdev
