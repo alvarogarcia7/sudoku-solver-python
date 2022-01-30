@@ -79,17 +79,19 @@ class ExactCover:
         self._print_matrix(self.solution_matrix)
 
     def _print_matrix(self, matrix: List[ChoiceRow]) -> None:
+        assert (len(self.range) == 2)
+
         print('{:8s} | {:10s} | {:11s} | {:11s}'.format('choice', 'some number', 'the number', 'the number'))
-        print('{:8s} | {:5d} {:5d} | {:5d} {:5d} | {:4d} {:4d}'.format('', 1, 2, 1, 2, 1, 2))
+        print('{:8s} | {:5d} {:5d} | {:5d} {:5d} | {:4d} {:4d}'.format('', *self.range, *self.range, *self.range))
         print('{:8s} | {:11s} | {:10s} | {:10s}'.format('', 'and row', 'must in row', 'must in col'))
         print(
             '{:8s} '
             '| {:2d} {:2d} {:2d} {:2d} '
             '| {:2d} {:2d} {:2d} {:2d} '
             '| {:2d} {:2d} {:2d} {:2d}'.format('',
-                                               1, 2, 1, 2,
-                                               1, 2, 1, 2,
-                                               1, 2, 1, 2))
+                                               *self.range, *self.range,
+                                               *self.range, *self.range,
+                                               *self.range, *self.range))
 
         for row in matrix:
             print('{:d} @ ({:d},{:d})|'.format(row['choice'], row['position'][0], row['position'][1]), end="")
