@@ -132,26 +132,6 @@ class ExactCover:
     def _empty_matrix(self) -> List[ChoiceRow]:
         return []
 
-    def heuristic(self) -> ChoiceRow:
-        if not self.solution_matrix:
-            return self.choice_matrix[0]
-        total = self._which_constraints_are_satisfied()
-
-        choice_matrix = list(filter(lambda x: not x['deleted'], self.choice_matrix))
-
-        some_column_empty = False
-        for constraint in self._number_of_constraints:
-            i, j = self.constraint_column_to_xy(constraint)
-            some_column_empty = some_column_empty or total[i][j]
-
-        # if not some_column_empty:
-        #     raise ValueError("Could not find empty column. Complete?")
-
-        if not choice_matrix:
-            raise ValueError("Could not find any row. Complete?")
-
-        return choice_matrix[0]
-
     def _which_constraints_are_satisfied(self) -> List[List[bool]]:
         total = copy.deepcopy(self.solution_matrix[0])
         total['choice'] = -1
@@ -194,8 +174,24 @@ class ExactCover:
         return len(self._not_deleted(self.solution_matrix))
 
     def select_row_using_heuristic(self) -> ChoiceRow:
-        selected_row = self.heuristic()
-        return selected_row
+        if not self.solution_matrix:
+            return self.choice_matrix[0]
+        total = self._which_constraints_are_satisfied()
+
+        choice_matrix = list(filter(lambda x: not x['deleted'], self.choice_matrix))
+
+        some_column_empty = False
+        for constraint in self._number_of_constraints:
+            i, j = self.constraint_column_to_xy(constraint)
+            some_column_empty = some_column_empty or total[i][j]
+
+        # if not some_column_empty:
+        #     raise ValueError("Could not find empty column. Complete?")
+
+        if not choice_matrix:
+            raise ValueError("Could not find any row. Complete?")
+
+        return choice_matrix[0]
 
     def is_complete(self) -> bool:
         for group in self.compute_solution_totals():
