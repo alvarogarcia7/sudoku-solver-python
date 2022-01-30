@@ -12,9 +12,10 @@ Iterations:
 2. Solver using 'backtracking' to try alternatives when there is ambiguity. Naive implementation, disregarding performance
 3. Optimise performance for the backtracking iteration.
 4. Add [MyPy](https://mypy.readthedocs.io/en/stable/index.html) types
-5. [Pending] Use Knuth's Dancing Links X (DLX) as an alternative to backtracking.
-6. [Pending] Compare 'DLX' and 'backtracking' alternatives
-7. [Pending] Find better heuristics for all alternatives (improving the runtime due to a better algorithm)
+5. Practicing Dancing Links X (DLX) on the Latin Square (2x2), without restrictions
+6. [Pending] Use Knuth's Dancing Links X as an alternative to backtracking.
+7. [Pending] Compare 'DLX' and 'backtracking' alternatives
+8. [Pending] Find better heuristics for all alternatives (improving the runtime due to a better algorithm)
 
 
 ## Performance work
