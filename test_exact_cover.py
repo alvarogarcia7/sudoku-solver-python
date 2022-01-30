@@ -136,9 +136,27 @@ class ExactCover:
     def _empty_matrix(self) -> List[ChoiceRow]:
         return []
 
-    def heuristic(self) -> int:
+    def heuristic(self) -> Optional[ChoiceRow]:
         if not self.solution_matrix:
-            return 0
+            return self.choice_matrix[0]
+        total = self._which_constraints_are_satisfied()
+
+        choice_matrix = list(filter(lambda x: not x['deleted'], self.choice_matrix))
+
+        some_column_empty = False
+        for constraint in range(0, 12 + 1):
+            i, j = self.constraint_column_to_xy(constraint)
+            some_column_empty = some_column_empty or total[i][j]
+
+        # if not some_column_empty:
+        #     raise ValueError("Could not find empty column. Complete?")
+
+        if not choice_matrix:
+            raise ValueError("Could not find any row. Complete?")
+
+        return choice_matrix[0]
+
+    def _which_constraints_are_satisfied(self) -> List[List[bool]]:
         total = copy.deepcopy(self.solution_matrix[0])
         total['choice'] = -1
         total['position'] = [0, 0]
@@ -147,12 +165,7 @@ class ExactCover:
             for column_index in range(1, len(row)):
                 x, y = self.constraint_column_to_xy(column_index)
                 total['constraints'][x][y] = total['constraints'][x][y] or row['constraints'][x][y]
-
-        for constraint in range(0, 12 + 1):
-            i, j = self.constraint_column_to_xy(constraint)
-            if not total['constraints'][i][j]:
-                return constraint
-        raise ValueError("Could not find empty column")
+        return total['constraints']
 
     def select_row(self, chosen_column: int) -> ChoiceRow:
         i, j = self.constraint_column_to_xy(chosen_column)
@@ -168,11 +181,12 @@ class ExactCover:
             if row == chosen_row:
                 row['deleted'] = True
 
-            #
-            # for constraint_group in chosen_row['constraints']:
-            #     for constraint in constraint_group:
-            #         if constraint:
-            #             row['de']
+        for constraint_group_idx, constraint_group in enumerate(chosen_row['constraints']):
+            for constraint_idx, constraint in enumerate(constraint_group):
+                if constraint:
+                    for choice in self.choice_matrix:
+                        if choice['constraints'][constraint_group_idx][constraint_idx]:
+                            choice['deleted'] = True
 
     def _not_deleted(self, values: List[ChoiceRow]) -> List[ChoiceRow]:
         return list(filter(lambda x: not x['deleted'], values))
@@ -182,6 +196,16 @@ class ExactCover:
 
     def solution_matrix_length(self) -> int:
         return len(self._not_deleted(self.solution_matrix))
+
+    def select_row_using_heuristic(self) -> Optional[ChoiceRow]:
+        selected_row = self.heuristic()
+        return selected_row
+
+    def is_complete(self):
+        for group in self.compute_solution_totals():
+            if min(group) == 0:
+                return False
+        return True
 
 
 class TestIOTest(unittest.TestCase):
@@ -215,27 +239,32 @@ class TestIOTest(unittest.TestCase):
 
         choice_matrix_rows = exact_cover.choice_matrix_length() + exact_cover.solution_matrix_length()
 
-        chosen_column = exact_cover.heuristic()
-        chosen_row = exact_cover.select_row(chosen_column)
-        exact_cover.add_to_solution(chosen_row)
-        exact_cover.remove_from_choice(chosen_row)
+        chosen_row = True
+        while chosen_row:
+            try:
+                chosen_row = exact_cover.select_row_using_heuristic()
+            except ValueError:
+                exact_cover.print_choice_matrix()
+                exact_cover.print_solution_matrix()
+                break
+            exact_cover.add_to_solution(chosen_row)
+            exact_cover.remove_from_choice(chosen_row)
 
-        totals = exact_cover.compute_solution_totals()
-        for total in totals:
-            self.assertTrue(max(total) == 1)
-
-        chosen_column = exact_cover.heuristic()
-        chosen_row = exact_cover.select_row(chosen_column)
-        exact_cover.add_to_solution(chosen_row)
-        exact_cover.remove_from_choice(chosen_row)
-
-        # totals = exact_cover.compute_solution_totals()
-        # assert(max(totals) == 1)
+            self.assert_no_repeated_constraints(exact_cover)
 
         exact_cover.print_choice_matrix()
         exact_cover.print_solution_matrix()
 
-        self.assertEqual(choice_matrix_rows, exact_cover.choice_matrix_length() + exact_cover.solution_matrix_length())
+        self.assertTrue(exact_cover.is_complete())
+
+    def assert_no_repeated_constraints(self, exact_cover: ExactCover) -> None:
+        totals = exact_cover.compute_solution_totals()
+        for total in totals:
+            try:
+                self.assertTrue(max(total) == 1)
+            except AssertionError:
+                print(totals)
+                raise
 
 
 if __name__ == '__main__':

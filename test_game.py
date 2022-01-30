@@ -318,9 +318,7 @@ class Sudoku:
                     min_ocurrences = current_occurrences
                     selected_positions = current_positions.copy()
 
-        if selected_positions is not None:
-            return selected_positions
-        return []
+        return selected_positions
 
     def _copy(self) -> list[list[Optional[int]]]:
         result = []
