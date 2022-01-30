@@ -115,8 +115,7 @@ class ExactCover:
         pass
 
     def compute_solution_totals(self) -> list[list[int]]:
-        # totals = [[0 for _ in self.choice_matrix[0]['constraints']] for _ in range(self.range.stop)]
-        totals = [[0, 0, 0, 0] for _ in range(self.range.stop)]
+        totals = [[0 for i in u] for u in self.choice_matrix[0]['constraints']]
         for row in self.solution_matrix:
             for j, val in enumerate(row['constraints']):
                 for k, valk in enumerate(val):
