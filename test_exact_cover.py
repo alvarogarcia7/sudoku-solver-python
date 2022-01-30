@@ -238,20 +238,23 @@ class TestIOTest(unittest.TestCase):
         exact_cover = ExactCover(IO().load_generic(raw_values))
 
         chosen_row = True
+        printed = False
         while chosen_row:
             try:
                 chosen_row = exact_cover.select_row_using_heuristic()
             except ValueError:
                 exact_cover.print_choice_matrix()
                 exact_cover.print_solution_matrix()
+                printed = True
                 break
             exact_cover.add_to_solution(chosen_row)
             exact_cover.remove_from_choice(chosen_row)
 
             self.assert_no_repeated_constraints(exact_cover)
 
-        exact_cover.print_choice_matrix()
-        exact_cover.print_solution_matrix()
+        if not printed:
+            exact_cover.print_choice_matrix()
+            exact_cover.print_solution_matrix()
 
         self.assertTrue(exact_cover.is_complete())
 
