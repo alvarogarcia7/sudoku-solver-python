@@ -237,8 +237,6 @@ class TestIOTest(unittest.TestCase):
         ]
         exact_cover = ExactCover(IO().load_generic(raw_values))
 
-        choice_matrix_rows = exact_cover.choice_matrix_length() + exact_cover.solution_matrix_length()
-
         chosen_row = True
         while chosen_row:
             try:
