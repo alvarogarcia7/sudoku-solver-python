@@ -22,3 +22,4 @@ pre-commit: test
 
 install-dependencies: virtual_setup
 	pip3 install -r requirements.txt
+.PHONY: install-dependencies
