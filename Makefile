@@ -1,5 +1,5 @@
 test-unit: virtual_setup
-	python -m unittest discover -v
+	python -m unittest discover -v . "*_test.py"
 .PHONY: test-unit
 
 typecheck:
