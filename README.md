@@ -47,7 +47,16 @@ Python 3.9.5 (default, May  4 2021, 03:33:11)
 [Clang 12.0.0 (clang-1200.0.32.29)] on darwin
 ```
 
+#### Results for Iteration 3
+
+By optimising the code, especially:
+
+  * access to arrays
+  * partial updates of results (instead of full, recomputation from scratch)
+
 This optimisation improves by 62% the previous result.
+
+Look at the code around d827fd78 or 2022-01-03
 
 ## Links
 
