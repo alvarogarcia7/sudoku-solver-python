@@ -136,7 +136,7 @@ class ExactCover:
     def _empty_matrix(self) -> List[ChoiceRow]:
         return []
 
-    def heuristic(self) -> Optional[ChoiceRow]:
+    def heuristic(self) -> ChoiceRow:
         if not self.solution_matrix:
             return self.choice_matrix[0]
         total = self._which_constraints_are_satisfied()
@@ -197,11 +197,11 @@ class ExactCover:
     def solution_matrix_length(self) -> int:
         return len(self._not_deleted(self.solution_matrix))
 
-    def select_row_using_heuristic(self) -> Optional[ChoiceRow]:
+    def select_row_using_heuristic(self) -> ChoiceRow:
         selected_row = self.heuristic()
         return selected_row
 
-    def is_complete(self):
+    def is_complete(self) -> bool:
         for group in self.compute_solution_totals():
             if min(group) == 0:
                 return False
@@ -237,7 +237,7 @@ class TestIOTest(unittest.TestCase):
         ]
         exact_cover = ExactCover(IO().load_generic(raw_values))
 
-        chosen_row = True
+        chosen_row: Union[bool, ChoiceRow] = True
         printed = False
         while chosen_row:
             try:
