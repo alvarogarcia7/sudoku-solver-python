@@ -160,7 +160,7 @@ class ExactCover:
         total['position'] = [0, 0]
         row: ChoiceRow
         for row_index, row in enumerate(self.solution_matrix):
-            for column_index in range(1, len(row)):
+            for column_index, _ in enumerate(row):
                 x, y = self.constraint_column_to_xy(column_index)
                 total['constraints'][x][y] = total['constraints'][x][y] or row['constraints'][x][y]
         return total['constraints']
