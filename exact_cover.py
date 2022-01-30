@@ -25,6 +25,7 @@ class ExactCover:
         assert reduce(and_, [len(row) == len(value[0]) for row in value])
 
         self.range = range(1, 2 + 1)
+        self._number_of_constraints = range(0, 12 + 1)  # 4, 4, 4
 
         self.choice_matrix = self._choice_matrix()
         self.solution_matrix = self._empty_matrix()
@@ -141,7 +142,7 @@ class ExactCover:
         choice_matrix = list(filter(lambda x: not x['deleted'], self.choice_matrix))
 
         some_column_empty = False
-        for constraint in range(0, 12 + 1):
+        for constraint in self._number_of_constraints:
             i, j = self.constraint_column_to_xy(constraint)
             some_column_empty = some_column_empty or total[i][j]
 
