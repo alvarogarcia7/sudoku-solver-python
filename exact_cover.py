@@ -112,7 +112,7 @@ class ExactCover:
         print()
 
     def compute_solution_totals(self) -> list[list[int]]:
-        totals = [[0 for i in u] for u in self.choice_matrix[0]['constraints']]
+        totals = [[0 for _ in u] for u in self.choice_matrix[0]['constraints']]
         for row in self.solution_matrix:
             for j, val in enumerate(row['constraints']):
                 for k, valk in enumerate(val):
@@ -129,7 +129,8 @@ class ExactCover:
         j = column_number % len(self.range)
         return i, j
 
-    def _empty_matrix(self) -> List[ChoiceRow]:
+    @staticmethod
+    def _empty_matrix() -> List[ChoiceRow]:
         return []
 
     def _which_constraints_are_satisfied(self) -> List[List[bool]]:
@@ -164,7 +165,8 @@ class ExactCover:
                         if choice['constraints'][constraint_group_idx][constraint_idx]:
                             choice['deleted'] = True
 
-    def _not_deleted(self, values: List[ChoiceRow]) -> List[ChoiceRow]:
+    @staticmethod
+    def _not_deleted(values: List[ChoiceRow]) -> List[ChoiceRow]:
         return list(filter(lambda x: not x['deleted'], values))
 
     def choice_matrix_length(self) -> int:
