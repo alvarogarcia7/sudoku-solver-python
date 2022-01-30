@@ -19,6 +19,9 @@ ChoiceRow = TypedDict('ChoiceRow',
 
 
 class ExactCover:
+    choice_matrix: list[ChoiceRow]
+    solution_matrix: list[ChoiceRow]
+
     def __init__(self, value: List[List[Optional[int]]]):
         # assert square matrix
         assert len(value) == len(value[0])
@@ -100,7 +103,26 @@ class ExactCover:
                 print(" |", end="")
             print()
 
+        totals = self.compute_solution_totals()
+
+        print('{:8s} |'.format('totals'), end="")
+        for subgroup in totals:
+            for cell in subgroup:
+                print('  {:1d}'.format(cell), end="")
+            print(" |", end="")
+        print()
+
         pass
+
+    def compute_solution_totals(self) -> list[list[int]]:
+        # totals = [[0 for _ in self.choice_matrix[0]['constraints']] for _ in range(self.range.stop)]
+        totals = [[0, 0, 0, 0] for _ in range(self.range.stop)]
+        for row in self.solution_matrix:
+            for j, val in enumerate(row['constraints']):
+                for k, valk in enumerate(val):
+                    totals[j][k] += 1 if valk else 0
+
+        return totals
 
     def rows_left_after_removing__column(self, column_number: int) -> None:
         i, j = self.constraint_column_to_xy(column_number)
@@ -120,14 +142,15 @@ class ExactCover:
         total = copy.deepcopy(self.solution_matrix[0])
         total['choice'] = -1
         total['position'] = [0, 0]
-        for row_index in self.solution_matrix:
-            for column_index in range(1, len(row_index)):
+        row: ChoiceRow
+        for row_index, row in enumerate(self.solution_matrix):
+            for column_index in range(1, len(row)):
                 x, y = self.constraint_column_to_xy(column_index)
-                total['constraints'][x][y] = total['constraints'][x][y] or self.solution_matrix[row_index][x][y]
+                total['constraints'][x][y] = total['constraints'][x][y] or row['constraints'][x][y]
 
         for constraint in range(0, 12 + 1):
             i, j = self.constraint_column_to_xy(constraint)
-            if not total[i][j]:
+            if not total['constraints'][i][j]:
                 return constraint
         raise ValueError("Could not find empty column")
 
@@ -159,7 +182,6 @@ class ExactCover:
 
     def solution_matrix_length(self) -> int:
         return len(self._not_deleted(self.solution_matrix))
-
 
 
 class TestIOTest(unittest.TestCase):
@@ -197,6 +219,18 @@ class TestIOTest(unittest.TestCase):
         chosen_row = exact_cover.select_row(chosen_column)
         exact_cover.add_to_solution(chosen_row)
         exact_cover.remove_from_choice(chosen_row)
+
+        totals = exact_cover.compute_solution_totals()
+        for total in totals:
+            self.assertTrue(max(total) == 1)
+
+        chosen_column = exact_cover.heuristic()
+        chosen_row = exact_cover.select_row(chosen_column)
+        exact_cover.add_to_solution(chosen_row)
+        exact_cover.remove_from_choice(chosen_row)
+
+        # totals = exact_cover.compute_solution_totals()
+        # assert(max(totals) == 1)
 
         exact_cover.print_choice_matrix()
         exact_cover.print_solution_matrix()
