@@ -80,7 +80,7 @@ class ExactCover:
         self._print_matrix(self.solution_matrix)
 
     def _print_matrix(self, matrix: List[ChoiceRow]) -> None:
-        assert (len(self.range) == 2)
+        assert len(self.range) == 2, "This printing code is only valid for ranges of size 2"
 
         print('{:8s} | {:10s} | {:11s} | {:11s}'.format('choice', 'some number', 'the number', 'the number'))
         print('{:8s} | {:5d} {:5d} | {:5d} {:5d} | {:4d} {:4d}'.format('', *self.range, *self.range, *self.range))
